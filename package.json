@@ -1,0 +1,38 @@
+{
+  "name": "live-server-speed-edition",
+  "displayName": "Live Server Speed Edition",
+  "description": "A blazing fast local HTTP server with live reload directly from VS Code.",
+  "version": "1.0.1",
+  "publisher": "Lololegeek",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "activationEvents": ["*"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fast-http-server.toggleServer",
+        "title": "Toggle Fast HTTP Server"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/ws": "^8.5.8",
+    "@types/node": "^20.11.0",
+    "@types/mocha": "^10.0.6",
+    "typescript": "^5.3.3",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.18.1",
+    "chokidar": "^3.6.0",
+    "open": "^8.4.0"
+  }
+}
