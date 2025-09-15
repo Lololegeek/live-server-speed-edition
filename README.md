@@ -1,3 +1,6 @@
+![Logo of the project](logo.png)
+# Live Server Speed Edition (LSSE)
+
 🚀 Live Server Speed Edition
 A blazing-fast local HTTP server with live reload — built right into VS Code.
 
@@ -59,5 +62,6 @@ Multi-folder support
 
 👨‍💻 Author
 Created with ❤️ by Lololegeek Want to contribute or suggest a feature? Open an issue or submit a PR!
+
 
 Let me know if you'd like a shorter version for the Marketplace summary or a visual banner to go with it!
