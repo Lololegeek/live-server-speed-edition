@@ -1,4 +1,4 @@
-![Logo of the project](logo.png)
+![Logo of the project](icon.png)
 # Live Server Speed Edition (LSSE)
 
 🚀 Live Server Speed Edition
@@ -65,3 +65,4 @@ Created with ❤️ by Lololegeek Want to contribute or suggest a feature? Open 
 
 
 Let me know if you'd like a shorter version for the Marketplace summary or a visual banner to go with it!
+
