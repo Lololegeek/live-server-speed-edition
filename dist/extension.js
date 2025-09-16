@@ -51,6 +51,7 @@ const vscode = __importStar(require("vscode"));
 const server_1 = require("./server");
 const open_1 = __importDefault(require("open"));
 const chokidar_1 = __importDefault(require("chokidar"));
+const path = __importStar(require("path"));
 let stopServer = null;
 let webviewPanel = null;
 let statusButton;
@@ -85,7 +86,93 @@ function activate(context) {
             if (!selectedFile)
                 return;
             const url = `http://localhost:${port}/${selectedFile}`;
-            const choice = yield vscode.window.showQuickPick(['Open in default browser', 'Open in VS Code WebView (Beta)'], { placeHolder: 'How do you want to open the server?' });
+            const choice = yield vscode.window.showQuickPick(['Preview without server (Instant)', 'Open in default browser', 'Open in VS Code WebView (Beta)'], { placeHolder: 'How do you want to preview?' });
+            if (choice === 'Preview without server (Instant)') {
+                const editor = vscode.window.activeTextEditor;
+                if (!editor) {
+                    vscode.window.showErrorMessage('No active editor');
+                    return;
+                }
+                const document = editor.document;
+                const docUri = document.uri;
+                const documentDir = path.dirname(docUri.fsPath);
+                // Créer une webview pour la prévisualisation instantanée
+                const previewPanel = vscode.window.createWebviewPanel('instantPreview', 'Instant Preview', vscode.ViewColumn.Two, {
+                    enableScripts: true,
+                    retainContextWhenHidden: true,
+                    localResourceRoots: [vscode.Uri.file(documentDir)],
+                    enableFindWidget: true
+                });
+                // Ajouter l'icône
+                const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+                previewPanel.iconPath = iconPath;
+                // Fonction pour convertir les chemins relatifs en chemins Webview
+                const getWebviewUri = (relativePath) => {
+                    const absolutePath = path.join(documentDir, relativePath);
+                    return 'vscode-resource:' + absolutePath;
+                };
+                // Fonction pour mettre à jour le contenu
+                const updateContent = (content) => {
+                    // Lire et injecter les fichiers CSS directement
+                    const cssInjections = new Set();
+                    content.replace(/<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g, (match, href) => {
+                        if (!href.startsWith('http')) {
+                            const cssPath = path.join(documentDir, href + '.css');
+                            try {
+                                const cssContent = require('fs').readFileSync(cssPath, 'utf8');
+                                cssInjections.add(cssContent);
+                            }
+                            catch (e) {
+                                console.error('Failed to load CSS:', e);
+                            }
+                        }
+                        return '';
+                    });
+                    // Traiter les autres ressources
+                    const processedContent = content
+                        .replace(/<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g, '' // Supprimer les liens CSS car on les injecte directement
+                    )
+                        .replace(/<script[^>]*src=["']([^"']+)["'][^>]*>/g, (match, src) => {
+                        if (src.startsWith('http'))
+                            return match;
+                        return match.replace(src, getWebviewUri(src));
+                    })
+                        .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/g, (match, src) => {
+                        if (src.startsWith('http'))
+                            return match;
+                        return match.replace(src, getWebviewUri(src));
+                    });
+                    previewPanel.webview.html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body { margin: 0; padding: 20px; }
+              </style>
+              ${[...cssInjections].map(css => `<style>${css}</style>`).join('\n')}
+            </head>
+            <body>
+              ${processedContent}
+            </body>
+            </html>
+          `;
+                };
+                // Mise à jour initiale
+                updateContent(document.getText());
+                // Écouter les changements
+                const changeDisposable = vscode.workspace.onDidChangeTextDocument(e => {
+                    if (e.document === document) {
+                        updateContent(e.document.getText());
+                    }
+                });
+                // Nettoyage
+                previewPanel.onDidDispose(() => {
+                    changeDisposable.dispose();
+                });
+                return;
+            }
             stopServer = (0, server_1.startServer)(folder, port, () => __awaiter(this, void 0, void 0, function* () {
                 if (choice === 'Open in default browser') {
                     (0, open_1.default)(url);
@@ -93,11 +180,13 @@ function activate(context) {
                 else if (choice === 'Open in VS Code WebView (Beta)') {
                     console.log('Creating webview panel...');
                     if (!webviewPanel) {
+                        const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
                         webviewPanel = vscode.window.createWebviewPanel('fastHttpWebview', 'Fast HTTP Server', vscode.ViewColumn.Two, {
                             enableScripts: true,
                             retainContextWhenHidden: true,
-                            localResourceRoots: [vscode.Uri.file(folder)]
+                            localResourceRoots: [vscode.Uri.file(folder), vscode.Uri.file(context.extensionPath)]
                         });
+                        webviewPanel.iconPath = iconPath;
                         webviewPanel.onDidDispose(() => {
                             console.log('Webview disposed');
                             webviewPanel = null;
