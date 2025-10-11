@@ -1,6 +1,3 @@
-![Logo of the project](icon.png)
-# Live Server Speed Edition (LSSE)
-
 🚀 Live Server Speed Edition
 A blazing-fast local HTTP server with live reload — built right into VS Code.
 
@@ -17,6 +14,8 @@ Choose between:
 
 🧩 Viewing directly inside VS Code via WebView
 
+The INSTANT Reload New Edition 🤯
+
 Zero configuration — just open a folder and go
 
 Default port: 5500
@@ -24,7 +23,7 @@ Default port: 5500
 🖥️ How to Use
 Open a folder in VS Code
 
-Click $(rocket) Start Fast HTTP in the status bar
+Click Start Fast HTTP in the status bar
 
 Choose your preferred view:
 
@@ -32,14 +31,14 @@ External browser
 
 VS Code WebView panel
 
-Edit your files — the page reloads automatically 💨
+Edit your files — the page reloads automatically after two seconds 💨
 
 📦 Installation
 Install from the Visual Studio Code Marketplace Or via CLI:
 
-bash
+bash :
 code --install-extension Lololegeek.live-server-speed-edition
-🛠️ Tech Stack
+ 🛠️ Tech Stack
 Express
 
 WebSocket
@@ -51,18 +50,13 @@ VS Code API
 ✨ Why This Edition?
 Because traditional live servers can be slow or bloated. This edition focuses on speed, simplicity, and native integration with VS Code. No config files. No clutter. Just fast results.
 
-🧪 Coming Soon
-Custom port selection
 
 HTTPS support
 
-Auto-detection of index.html
 
 Multi-folder support
 
 👨‍💻 Author
 Created with ❤️ by Lololegeek Want to contribute or suggest a feature? Open an issue or submit a PR!
 
-
 Let me know if you'd like a shorter version for the Marketplace summary or a visual banner to go with it!
-
