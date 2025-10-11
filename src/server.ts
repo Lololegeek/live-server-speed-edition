@@ -64,8 +64,8 @@ export function startServer(
     interval: 100,
     binaryInterval: 100
   }).on('all', (event, path) => {
-    // Ignore les fichiers temporaires et les dossiers node_modules
-    if (path.includes('node_modules') || path.startsWith('.')) {
+    // Ignore temporary files and node_modules
+    if (path.includes('node_modules') || path.startsWith('.') || path.includes('~') || path.endsWith('.tmp')) {
       return;
     }
     broadcast('reload');
