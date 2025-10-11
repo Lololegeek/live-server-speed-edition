@@ -1,6 +1,6 @@
 🚀 Setup Instructions
 - Download the source code
-👉 Click here to download (replace with your actual repo)
+👉 Click here to download :
 - Open the project in Visual Studio Code
 If you don't have VS Code yet, you can download it here.
 - Install dependencies
