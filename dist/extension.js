@@ -52,9 +52,24 @@ const server_1 = require("./server");
 const open_1 = __importDefault(require("open"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const path = __importStar(require("path"));
+const net = __importStar(require("net"));
 let stopServer = null;
 let webviewPanel = null;
 let statusButton;
+// Function to check if port is available
+function isPortAvailable(port) {
+    return new Promise((resolve) => {
+        const server = net.createServer();
+        server.listen(port, '127.0.0.1', () => {
+            server.close();
+            resolve(true);
+        });
+        server.on('error', () => {
+            resolve(false);
+        });
+    });
+}
+console.log("the extension is good");
 function activate(context) {
     statusButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     statusButton.text = '$(rocket) Start Fast HTTP';
@@ -62,6 +77,130 @@ function activate(context) {
     statusButton.command = 'fast-http-server.toggleServer';
     statusButton.show();
     context.subscriptions.push(statusButton);
+    // Create Instant Preview button in editor title area
+    const instantPreviewButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+    instantPreviewButton.text = '$(eye) Instant Preview';
+    instantPreviewButton.tooltip = 'Show Instant Preview of current HTML file';
+    instantPreviewButton.command = 'fast-http-server.instantPreview';
+    instantPreviewButton.show();
+    context.subscriptions.push(instantPreviewButton);
+    // Register Instant Preview command
+    const instantPreviewCmd = vscode.commands.registerCommand('fast-http-server.instantPreview', () => __awaiter(this, void 0, void 0, function* () {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage('No active editor');
+            return;
+        }
+        if (editor.document.languageId !== 'html') {
+            vscode.window.showErrorMessage('Please open an HTML file for instant preview');
+            return;
+        }
+        const document = editor.document;
+        const docUri = document.uri;
+        const documentDir = path.dirname(docUri.fsPath);
+        // Créer une webview pour la prévisualisation instantanée
+        const previewPanel = vscode.window.createWebviewPanel('instantPreview', 'Instant Preview', vscode.ViewColumn.Two, {
+            enableScripts: true,
+            retainContextWhenHidden: true,
+            localResourceRoots: [vscode.Uri.file(documentDir)],
+            enableFindWidget: true
+        });
+        // Ajouter l'icône
+        const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+        previewPanel.iconPath = iconPath;
+        // Fonction pour convertir les chemins relatifs en chemins Webview
+        const getWebviewUri = (relativePath) => {
+            const absolutePath = path.join(documentDir, relativePath);
+            return 'vscode-resource:' + absolutePath;
+        };
+        // Fonction pour mettre à jour le contenu
+        const updateContent = (content) => {
+            // Lire et injecter les fichiers CSS directement
+            const cssInjections = new Set();
+            content.replace(/<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g, (match, href) => {
+                if (!href.startsWith('http')) {
+                    const cssPath = path.join(documentDir, href.endsWith('.css') ? href : href + '.css');
+                    try {
+                        const cssContent = require('fs').readFileSync(cssPath, 'utf8');
+                        cssInjections.add(cssContent);
+                    }
+                    catch (e) {
+                        console.error('Failed to load CSS:', e);
+                    }
+                }
+                return '';
+            });
+            // Lire et injecter les scripts JS directement
+            const scriptInjections = new Set();
+            content = content.replace(/<script[^>]*src=["']([^"']+)\.js["'][^>]*><\/script>/g, (match, src) => {
+                if (!src.startsWith('http')) {
+                    const jsPath = path.join(documentDir, src.endsWith('.js') ? src : src + '.js');
+                    try {
+                        const jsContent = require('fs').readFileSync(jsPath, 'utf8');
+                        scriptInjections.add(jsContent);
+                    }
+                    catch (e) {
+                        console.error('Failed to load JS:', e);
+                    }
+                    return ''; // Remove the script tag, will inject inline
+                }
+                return match;
+            });
+            // Traiter les autres ressources
+            const processedContent = content
+                .replace(/<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g, '' // Supprimer les liens CSS car on les injecte directement
+            )
+                .replace(/<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/g, (match, src) => {
+                if (src.startsWith('http'))
+                    return match;
+                return ''; // Already handled above
+            })
+                .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/g, (match, src) => {
+                if (src.startsWith('http'))
+                    return match;
+                return match.replace(src, getWebviewUri(src));
+            });
+            previewPanel.webview.html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { margin: 0; padding: 20px; }
+          </style>
+          ${[...cssInjections].map(css => `<style>${css}</style>`).join('\n')}
+        </head>
+        <body>
+          ${processedContent}
+          ${[...scriptInjections].map(js => `<script>${js}</script>`).join('\n')}
+        </body>
+        </html>
+      `;
+        };
+        // Debounce function for instant preview updates - reduced for faster response
+        let updateTimeout = null;
+        const debounceUpdate = (content) => {
+            if (updateTimeout)
+                clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+                updateContent(content);
+            }, 50); // Reduced to 50ms for more instant updates
+        };
+        // Mise à jour initiale
+        updateContent(document.getText());
+        // Écouter les changements
+        const changeDisposable = vscode.workspace.onDidChangeTextDocument(e => {
+            if (e.document === document) {
+                debounceUpdate(e.document.getText());
+            }
+        });
+        // Nettoyage
+        previewPanel.onDidDispose(() => {
+            changeDisposable.dispose();
+        });
+    }));
+    context.subscriptions.push(instantPreviewCmd);
     const toggleCmd = vscode.commands.registerCommand('fast-http-server.toggleServer', () => __awaiter(this, void 0, void 0, function* () {
         var _a, _b;
         if (!stopServer) {
@@ -78,6 +217,18 @@ function activate(context) {
             if (!portInput)
                 return;
             const port = parseInt(portInput, 10);
+            // Check if port is available
+            const available = yield isPortAvailable(port);
+            if (!available) {
+                const tryAgain = yield vscode.window.showErrorMessage(`Port ${port} is already in use. Choose another port?`, 'Try Another Port', 'Cancel');
+                if (tryAgain === 'Try Another Port') {
+                    // Recursively call the command or loop, but for simplicity, just return
+                    return;
+                }
+                else {
+                    return;
+                }
+            }
             const files = yield vscode.workspace.findFiles('**/*.html');
             const fileChoices = files.map(f => vscode.workspace.asRelativePath(f));
             const selectedFile = yield vscode.window.showQuickPick(fileChoices, {
@@ -117,7 +268,7 @@ function activate(context) {
                     const cssInjections = new Set();
                     content.replace(/<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g, (match, href) => {
                         if (!href.startsWith('http')) {
-                            const cssPath = path.join(documentDir, href + '.css');
+                            const cssPath = path.join(documentDir, href.endsWith('.css') ? href : href + '.css');
                             try {
                                 const cssContent = require('fs').readFileSync(cssPath, 'utf8');
                                 cssInjections.add(cssContent);
@@ -128,14 +279,30 @@ function activate(context) {
                         }
                         return '';
                     });
+                    // Lire et injecter les scripts JS directement
+                    const scriptInjections = new Set();
+                    content = content.replace(/<script[^>]*src=["']([^"']+)\.js["'][^>]*><\/script>/g, (match, src) => {
+                        if (!src.startsWith('http')) {
+                            const jsPath = path.join(documentDir, src.endsWith('.js') ? src : src + '.js');
+                            try {
+                                const jsContent = require('fs').readFileSync(jsPath, 'utf8');
+                                scriptInjections.add(jsContent);
+                            }
+                            catch (e) {
+                                console.error('Failed to load JS:', e);
+                            }
+                            return ''; // Remove the script tag, will inject inline
+                        }
+                        return match;
+                    });
                     // Traiter les autres ressources
                     const processedContent = content
                         .replace(/<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g, '' // Supprimer les liens CSS car on les injecte directement
                     )
-                        .replace(/<script[^>]*src=["']([^"']+)["'][^>]*>/g, (match, src) => {
+                        .replace(/<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/g, (match, src) => {
                         if (src.startsWith('http'))
                             return match;
-                        return match.replace(src, getWebviewUri(src));
+                        return ''; // Already handled above
                     })
                         .replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/g, (match, src) => {
                         if (src.startsWith('http'))
@@ -155,16 +322,26 @@ function activate(context) {
             </head>
             <body>
               ${processedContent}
+              ${[...scriptInjections].map(js => `<script>${js}</script>`).join('\n')}
             </body>
             </html>
           `;
+                };
+                // Debounce function for instant preview updates
+                let updateTimeout = null;
+                const debounceUpdate = (content) => {
+                    if (updateTimeout)
+                        clearTimeout(updateTimeout);
+                    updateTimeout = setTimeout(() => {
+                        updateContent(content);
+                    }, 200); // Debounce to 200ms for instant preview
                 };
                 // Mise à jour initiale
                 updateContent(document.getText());
                 // Écouter les changements
                 const changeDisposable = vscode.workspace.onDidChangeTextDocument(e => {
                     if (e.document === document) {
-                        updateContent(e.document.getText());
+                        debounceUpdate(e.document.getText());
                     }
                 });
                 // Nettoyage
