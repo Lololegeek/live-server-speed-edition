@@ -1,4 +1,4 @@
-# Improvements for Live Server Speed Edition 1.1.0
+# Improvements for Live Server Speed Edition 1.1.1
 
 ## Completed
 - [x] Added debouncing to instant preview updates (200ms debounce)
@@ -15,4 +15,5 @@
 ## Potential Future Improvements
 - Add configuration settings for debounce time
 - Improve webview reload reliability
+
 - Add lang settings
