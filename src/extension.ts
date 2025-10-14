@@ -8,6 +8,116 @@ import * as net from 'net';
 let stopServer: (() => void) | null = null;
 let webviewPanel: vscode.WebviewPanel | null = null;
 let statusButton: vscode.StatusBarItem;
+let currentWebviewUrl: string | null = null;
+let currentWebviewPort: number | null = null;
+
+// Simple translation map
+const TRANSLATIONS: Record<string, Record<string, string>> = {
+  en: {
+    start: '$(rocket) Start Fast HTTP',
+    stop: '$(debug-disconnect) Stop Fast HTTP',
+    startTooltip: 'Start Fast HTTP Server',
+    stopTooltip: 'Stop Fast HTTP Server',
+    instantPreview: '$(eye) Instant Preview',
+    instantPreviewTooltip: 'Show Instant Preview of current HTML file',
+    noFolder: 'No folder is open in VS Code.',
+    noEditor: 'No active editor',
+    openHtml: 'Please open an HTML file for instant preview',
+    loading: 'Loading preview...'
+    ,
+    enterPort: 'Enter the port number for the server',
+    invalidPort: 'Please enter a valid port number',
+    selectHtml: 'Select the HTML file to open',
+    previewInstant: 'Preview without server (Instant)',
+    openDefault: 'Open in default browser',
+    openWebview: 'Open in VS Code WebView (Beta)',
+    howPreview: 'How do you want to preview?',
+    tryAnotherPort: 'Try Another Port',
+    cancel: 'Cancel',
+    portInUse: 'Port {port} is already in use. Choose another port?',
+    instantPreviewTitle: 'Instant Preview',
+    fastHttpServerTitle: 'Fast HTTP Server',
+    serverStopped: 'Server stopped.'
+  },
+  fr: {
+    start: '$(rocket) Démarrer Fast HTTP',
+    stop: '$(debug-disconnect) Arrêter Fast HTTP',
+    startTooltip: "Démarrer le serveur Fast HTTP",
+    stopTooltip: "Arrêter le serveur Fast HTTP",
+    instantPreview: '$(eye) Prévisualisation instantanée',
+    instantPreviewTooltip: "Afficher la prévisualisation du fichier HTML courant",
+    noFolder: "Aucun dossier n'est ouvert dans VS Code.",
+    noEditor: "Aucun éditeur actif",
+    openHtml: "Veuillez ouvrir un fichier HTML pour la prévisualisation instantanée",
+    loading: 'Chargement du preview...'
+    ,
+    enterPort: "Entrez le numéro de port pour le serveur",
+    invalidPort: "Veuillez entrer un numéro de port valide",
+    selectHtml: "Sélectionnez le fichier HTML à ouvrir",
+    previewInstant: "Prévisualiser sans serveur (Instant)",
+    openDefault: "Ouvrir dans le navigateur par défaut",
+    openWebview: "Ouvrir dans WebView VS Code (Beta)",
+    howPreview: "Comment voulez-vous prévisualiser ?",
+    tryAnotherPort: "Essayer un autre port",
+    cancel: "Annuler",
+    portInUse: "Le port {port} est déjà utilisé. Choisissez un autre port ?",
+    instantPreviewTitle: "Prévisualisation instantanée",
+    fastHttpServerTitle: "Serveur Fast HTTP",
+    serverStopped: "Serveur arrêté."
+  },
+  es: {
+    start: '$(rocket) Iniciar Fast HTTP',
+    stop: '$(debug-disconnect) Detener Fast HTTP',
+    startTooltip: 'Iniciar servidor Fast HTTP',
+    stopTooltip: 'Detener servidor Fast HTTP',
+    instantPreview: '$(eye) Vista instantánea',
+    instantPreviewTooltip: 'Mostrar vista previa del archivo HTML actual',
+    noFolder: 'No hay ninguna carpeta abierta en VS Code.',
+    noEditor: 'Ningún editor activo',
+    openHtml: 'Abre un archivo HTML para la vista instantánea',
+    loading: 'Cargando vista previa...'
+    ,
+    enterPort: 'Introduce el número de puerto para el servidor',
+    invalidPort: 'Por favor introduce un número de puerto válido',
+    selectHtml: 'Selecciona el archivo HTML a abrir',
+    previewInstant: 'Vista previa sin servidor (Instantánea)',
+    openDefault: 'Abrir en el navegador por defecto',
+    openWebview: 'Abrir en WebView de VS Code (Beta)',
+    howPreview: '¿Cómo quieres previsualizar?',
+    tryAnotherPort: 'Probar otro puerto',
+    cancel: 'Cancelar',
+    portInUse: 'El puerto {port} ya está en uso. ¿Elegir otro puerto?',
+    instantPreviewTitle: 'Vista instantánea',
+    fastHttpServerTitle: 'Fast HTTP Server',
+    serverStopped: 'Servidor detenido.'
+  },
+  de: {
+    start: '$(rocket) Fast HTTP starten',
+    stop: '$(debug-disconnect) Fast HTTP stoppen',
+    startTooltip: 'Fast HTTP Server starten',
+    stopTooltip: 'Fast HTTP Server stoppen',
+    instantPreview: '$(eye) Sofortvorschau',
+    instantPreviewTooltip: 'Sofortvorschau der aktuellen HTML-Datei anzeigen',
+    noFolder: 'Kein Ordner in VS Code geöffnet.',
+    noEditor: 'Kein aktiver Editor',
+    openHtml: 'Bitte öffne eine HTML-Datei für die Sofortvorschau',
+    loading: 'Vorschau wird geladen...'
+    ,
+    enterPort: 'Gib die Portnummer für den Server ein',
+    invalidPort: 'Bitte gib eine gültige Portnummer ein',
+    selectHtml: 'Wähle die zu öffnende HTML-Datei aus',
+    previewInstant: 'Vorschau ohne Server (Sofort)',
+    openDefault: 'Im Standardbrowser öffnen',
+    openWebview: 'In VS Code WebView öffnen (Beta)',
+    howPreview: 'Wie möchtest du die Vorschau anzeigen?',
+    tryAnotherPort: 'Anderen Port versuchen',
+    cancel: 'Abbrechen',
+    portInUse: 'Port {port} ist bereits in Verwendung. Wähle einen anderen Port?',
+    instantPreviewTitle: 'Sofortvorschau',
+    fastHttpServerTitle: 'Fast HTTP Server',
+    serverStopped: 'Server gestoppt.'
+  }
+};
 
 // Function to check if port is available
 function isPortAvailable(port: number): Promise<boolean> {
@@ -27,17 +137,33 @@ function isPortAvailable(port: number): Promise<boolean> {
 console.log("the extension is good")
 
 export function activate(context: vscode.ExtensionContext) {
+  // status and preview buttons
   statusButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-  statusButton.text = '$(rocket) Start Fast HTTP';
-  statusButton.tooltip = 'Start Fast HTTP Server';
+  const instantPreviewButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+
+  // Helper to get translation with fallback
+  function getTranslation(key: string, fallback: string): string {
+    const lang = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.language', 'en') || 'en';
+    const tr = TRANSLATIONS[lang] || TRANSLATIONS.en;
+    // @ts-ignore
+    return tr[key] || fallback;
+  }
+
+  // Apply translations to UI elements
+  const applyTranslations = () => {
+    statusButton.text = getTranslation('start', '$(rocket) Start Fast HTTP');
+    statusButton.tooltip = getTranslation('startTooltip', 'Start Fast HTTP Server');
+    instantPreviewButton.text = getTranslation('instantPreview', '$(eye) Instant Preview');
+    instantPreviewButton.tooltip = getTranslation('instantPreviewTooltip', 'Show Instant Preview of current HTML file');
+  };
+
+  applyTranslations();
+
   statusButton.command = 'fast-http-server.toggleServer';
   statusButton.show();
   context.subscriptions.push(statusButton);
 
   // Create Instant Preview button in editor title area
-  const instantPreviewButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
-  instantPreviewButton.text = '$(eye) Instant Preview';
-  instantPreviewButton.tooltip = 'Show Instant Preview of current HTML file';
   instantPreviewButton.command = 'fast-http-server.instantPreview';
   instantPreviewButton.show();
   context.subscriptions.push(instantPreviewButton);
@@ -46,12 +172,12 @@ export function activate(context: vscode.ExtensionContext) {
   const instantPreviewCmd = vscode.commands.registerCommand('fast-http-server.instantPreview', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-      vscode.window.showErrorMessage('No active editor');
+      vscode.window.showErrorMessage(getTranslation('noEditor', 'No active editor'));
       return;
     }
 
     if (editor.document.languageId !== 'html') {
-      vscode.window.showErrorMessage('Please open an HTML file for instant preview');
+      vscode.window.showErrorMessage(getTranslation('openHtml', 'Please open an HTML file for instant preview'));
       return;
     }
 
@@ -62,7 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Créer une webview pour la prévisualisation instantanée
     const previewPanel = vscode.window.createWebviewPanel(
       'instantPreview',
-      'Instant Preview',
+      getTranslation('instantPreviewTitle', 'Instant Preview'),
       vscode.ViewColumn.Two,
       { 
         enableScripts: true,
@@ -73,13 +199,22 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     // Ajouter l'icône
-    const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
-    previewPanel.iconPath = iconPath;
+    // Use asWebviewUri for local resources
+    try {
+      const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+      previewPanel.iconPath = iconPath;
+    } catch (e) {
+      // ignore
+    }
 
     // Fonction pour convertir les chemins relatifs en chemins Webview
     const getWebviewUri = (relativePath: string) => {
-      const absolutePath = path.join(documentDir, relativePath);
-      return 'vscode-resource:' + absolutePath;
+      const absolutePath = vscode.Uri.file(path.join(documentDir, relativePath));
+      try {
+        return (previewPanel.webview as any).asWebviewUri(absolutePath).toString();
+      } catch (e) {
+        return absolutePath.toString();
+      }
     };
 
     // Fonction pour mettre à jour le contenu
@@ -191,14 +326,14 @@ export function activate(context: vscode.ExtensionContext) {
     if (!stopServer) {
       const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       if (!folder) {
-        vscode.window.showErrorMessage('No folder is open in VS Code.');
+        vscode.window.showErrorMessage(getTranslation('noFolder', 'No folder is open in VS Code.'));
         return;
       }
 
       const portInput = await vscode.window.showInputBox({
-        prompt: 'Enter the port number for the server',
+        prompt: getTranslation('enterPort', 'Enter the port number for the server'),
         value: '5500',
-        validateInput: (value) => /^\d+$/.test(value) ? null : 'Please enter a valid port number'
+        validateInput: (value) => /^\d+$/.test(value) ? null : getTranslation('invalidPort', 'Please enter a valid port number')
       });
 
       if (!portInput) return;
@@ -207,13 +342,17 @@ export function activate(context: vscode.ExtensionContext) {
       // Check if port is available
       const available = await isPortAvailable(port);
       if (!available) {
+        const tryLabel = getTranslation('tryAnotherPort', 'Try Another Port');
+        const cancelLabel = getTranslation('cancel', 'Cancel');
+        const portMsgTemplate = getTranslation('portInUse', `Port {port} is already in use. Choose another port?`);
+        const portMsg = portMsgTemplate.replace('{port}', String(port));
         const tryAgain = await vscode.window.showErrorMessage(
-          `Port ${port} is already in use. Choose another port?`,
-          'Try Another Port',
-          'Cancel'
+          portMsg,
+          tryLabel,
+          cancelLabel
         );
-        if (tryAgain === 'Try Another Port') {
-          // Recursively call the command or loop, but for simplicity, just return
+        if (tryAgain === tryLabel) {
+          // For simplicity, do nothing and return (user can re-run)
           return;
         } else {
           return;
@@ -223,22 +362,25 @@ export function activate(context: vscode.ExtensionContext) {
       const files = await vscode.workspace.findFiles('**/*.html');
       const fileChoices = files.map(f => vscode.workspace.asRelativePath(f));
       const selectedFile = await vscode.window.showQuickPick(fileChoices, {
-        placeHolder: 'Select the HTML file to open'
+        placeHolder: getTranslation('selectHtml', 'Select the HTML file to open')
       });
 
       if (!selectedFile) return;
 
-      const url = `http://localhost:${port}/${selectedFile}`;
+  const url = `http://localhost:${port}/${selectedFile}`;
 
+      const choicePreview = getTranslation('previewInstant', 'Preview without server (Instant)');
+      const choiceBrowser = getTranslation('openDefault', 'Open in default browser');
+      const choiceWebview = getTranslation('openWebview', 'Open in VS Code WebView (Beta)');
       const choice = await vscode.window.showQuickPick(
-        ['Preview without server (Instant)', 'Open in default browser', 'Open in VS Code WebView (Beta)'],
-        { placeHolder: 'How do you want to preview?' }
+        [choicePreview, choiceBrowser, choiceWebview],
+        { placeHolder: getTranslation('howPreview', 'How do you want to preview?') }
       );
 
-      if (choice === 'Preview without server (Instant)') {
+      if (choice === choicePreview) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
-          vscode.window.showErrorMessage('No active editor');
+          vscode.window.showErrorMessage(getTranslation('noEditor', 'No active editor'));
           return;
         }
 
@@ -249,7 +391,7 @@ export function activate(context: vscode.ExtensionContext) {
         // Créer une webview pour la prévisualisation instantanée
         const previewPanel = vscode.window.createWebviewPanel(
           'instantPreview',
-          'Instant Preview',
+          getTranslation('instantPreviewTitle', 'Instant Preview'),
           vscode.ViewColumn.Two,
           { 
             enableScripts: true,
@@ -260,8 +402,8 @@ export function activate(context: vscode.ExtensionContext) {
         );
 
         // Ajouter l'icône
-        const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
-        previewPanel.iconPath = iconPath;
+  const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+  previewPanel.iconPath = iconPath;
 
         // Fonction pour convertir les chemins relatifs en chemins Webview
         const getWebviewUri = (relativePath: string) => {
@@ -329,7 +471,7 @@ export function activate(context: vscode.ExtensionContext) {
               }
             );
 
-          previewPanel.webview.html = `
+      previewPanel.webview.html = `
             <!DOCTYPE html>
             <html>
             <head>
@@ -381,15 +523,15 @@ export function activate(context: vscode.ExtensionContext) {
         } else if (choice === 'Open in VS Code WebView (Beta)') {
           console.log('Creating webview panel...');
           if (!webviewPanel) {
-            const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
-            webviewPanel = vscode.window.createWebviewPanel(
+              const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+                webviewPanel = vscode.window.createWebviewPanel(
               'fastHttpWebview',
-              'Fast HTTP Server',
+              getTranslation('fastHttpServerTitle', 'Fast HTTP Server'),
               vscode.ViewColumn.Two,
               { 
                 enableScripts: true, 
                 retainContextWhenHidden: true,
-                localResourceRoots: [vscode.Uri.file(folder), vscode.Uri.file(context.extensionPath)]
+                    localResourceRoots: [vscode.Uri.file(folder), vscode.Uri.file(context.extensionPath)]
               }
             );
             webviewPanel.iconPath = iconPath;
@@ -399,7 +541,11 @@ export function activate(context: vscode.ExtensionContext) {
             });
           }
           console.log('Setting webview content for URL:', url);
-          webviewPanel.webview.html = getWebviewContent(url, port);
+          // Localize loading text in webview and remember url/port for runtime updates
+          currentWebviewUrl = url;
+          currentWebviewPort = port;
+          const loadingText = getTranslation('loading', 'Loading preview...');
+          webviewPanel.webview.html = getWebviewContent(url, port, loadingText);
           // Mettre à jour la webview quand le fichier change
           // Surveiller les changements de fichiers sur le disque
           const watcher = chokidar.watch(folder, {
@@ -421,14 +567,16 @@ export function activate(context: vscode.ExtensionContext) {
                 changedFilePath.endsWith('.css') || 
                 changedFilePath.endsWith('.js'))) {
               if (webviewPanel) {
-                webviewPanel.webview.html = getWebviewContent(url, port);
+                const loadingText2 = getTranslation('loading', 'Loading preview...');
+                webviewPanel.webview.html = getWebviewContent(url, port, loadingText2);
               }
             }
           });
 
           watcher.on('all', () => {
             if (webviewPanel) {
-              webviewPanel.webview.html = getWebviewContent(url, port);
+              const loadingText3 = getTranslation('loading', 'Loading preview...');
+              webviewPanel.webview.html = getWebviewContent(url, port, loadingText3);
             }
           });
 
@@ -440,8 +588,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
       });
 
-      statusButton.text = '$(debug-disconnect) Stop Fast HTTP';
-      statusButton.tooltip = 'Stop Fast HTTP Server';
+      statusButton.text = getTranslation('stop', '$(debug-disconnect) Stop Fast HTTP');
+      statusButton.tooltip = getTranslation('stopTooltip', 'Stop Fast HTTP Server');
     } else {
       stopServer();
       stopServer = null;
@@ -449,16 +597,33 @@ export function activate(context: vscode.ExtensionContext) {
         webviewPanel.dispose();
         webviewPanel = null;
       }
-      vscode.window.showInformationMessage('Server stopped.');
-      statusButton.text = '$(rocket) Start Fast HTTP';
-      statusButton.tooltip = 'Start Fast HTTP Server';
+      vscode.window.showInformationMessage(getTranslation('serverStopped', 'Server stopped.'));
+      statusButton.text = getTranslation('start', '$(rocket) Start Fast HTTP');
+      statusButton.tooltip = getTranslation('startTooltip', 'Start Fast HTTP Server');
     }
   });
 
   context.subscriptions.push(toggleCmd);
+
+  // Listen to configuration changes so language changes apply immediately
+  const configChangeDisposable = vscode.workspace.onDidChangeConfiguration(e => {
+    if (e.affectsConfiguration('liveServerSpeed.language')) {
+      // Re-apply translations to UI
+      try { applyTranslations(); } catch (e) { /* ignore */ }
+      // If a webview is open and we know the url/port, refresh its HTML with new loading text
+      if (webviewPanel && currentWebviewUrl && currentWebviewPort) {
+        const loadingText = ((): string => {
+          const lang = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.language', 'en') || 'en';
+          return TRANSLATIONS[lang]?.loading || TRANSLATIONS.en.loading;
+        })();
+        webviewPanel.webview.html = getWebviewContent(currentWebviewUrl, currentWebviewPort, loadingText);
+      }
+    }
+  });
+  context.subscriptions.push(configChangeDisposable);
 }
 
-function getWebviewContent(url: string, port: number): string {
+function getWebviewContent(url: string, port: number, loadingText: string = 'Loading preview...'): string {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -489,7 +654,7 @@ function getWebviewContent(url: string, port: number): string {
       </style>
     </head>
     <body>
-      <div id="loading">Chargement du preview...</div>
+      <div id="loading">${loadingText}</div>
       <iframe id="previewFrame" 
               src="${url}" 
               onload="document.getElementById('loading').style.display='none';"
