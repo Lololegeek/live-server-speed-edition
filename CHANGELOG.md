@@ -7,6 +7,11 @@
 - Ensured server stops correctly and webview disposes properly
 - Prevented multiple server instances by properly managing stopServer function
 
+### Added
+
+- Delete commentaries 
+- Debounce settings
+
 ## [1.1.2] - 2025-10-14
 
 ### Added
