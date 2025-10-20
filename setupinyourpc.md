@@ -15,6 +15,7 @@ npm install
 Feel free to customize or improve the project as needed.
 
 - Run the extension
+Type npm run compile in cmd  
 Press F5 in VS Code to launch the extension.
 
 Thank you 🫡
