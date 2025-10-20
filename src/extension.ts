@@ -11,7 +11,6 @@ let statusButton: vscode.StatusBarItem;
 let currentWebviewUrl: string | null = null;
 let currentWebviewPort: number | null = null;
 
-// Simple translation map
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
     start: '$(rocket) Start Fast HTTP',
@@ -137,19 +136,19 @@ function isPortAvailable(port: number): Promise<boolean> {
 console.log("the extension is good")
 
 export function activate(context: vscode.ExtensionContext) {
-  // status and preview buttons
   statusButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   const instantPreviewButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
 
-  // Helper to get translation with fallback
   function getTranslation(key: string, fallback: string): string {
     const lang = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.language', 'en') || 'en';
     const tr = TRANSLATIONS[lang] || TRANSLATIONS.en;
-    // @ts-ignore
     return tr[key] || fallback;
   }
 
-  // Apply translations to UI elements
+  function getDebounceTime(): number {
+    return vscode.workspace.getConfiguration().get<number>('liveServerSpeed.debounceTime', 200) || 200;
+  }
+
   const applyTranslations = () => {
     statusButton.text = getTranslation('start', '$(rocket) Start Fast HTTP');
     statusButton.tooltip = getTranslation('startTooltip', 'Start Fast HTTP Server');
@@ -163,12 +162,10 @@ export function activate(context: vscode.ExtensionContext) {
   statusButton.show();
   context.subscriptions.push(statusButton);
 
-  // Create Instant Preview button in editor title area
   instantPreviewButton.command = 'fast-http-server.instantPreview';
   instantPreviewButton.show();
   context.subscriptions.push(instantPreviewButton);
 
-  // Register Instant Preview command
   const instantPreviewCmd = vscode.commands.registerCommand('fast-http-server.instantPreview', async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -185,7 +182,6 @@ export function activate(context: vscode.ExtensionContext) {
     const docUri = document.uri;
     const documentDir = path.dirname(docUri.fsPath);
 
-    // Créer une webview pour la prévisualisation instantanée
     const previewPanel = vscode.window.createWebviewPanel(
       'instantPreview',
       getTranslation('instantPreviewTitle', 'Instant Preview'),
@@ -198,16 +194,12 @@ export function activate(context: vscode.ExtensionContext) {
       }
     );
 
-    // Ajouter l'icône
-    // Use asWebviewUri for local resources
     try {
       const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
       previewPanel.iconPath = iconPath;
     } catch (e) {
-      // ignore
     }
 
-    // Fonction pour convertir les chemins relatifs en chemins Webview
     const getWebviewUri = (relativePath: string) => {
       const absolutePath = vscode.Uri.file(path.join(documentDir, relativePath));
       try {
@@ -217,9 +209,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
     };
 
-    // Fonction pour mettre à jour le contenu
     const updateContent = (content: string) => {
-      // Lire et injecter les fichiers CSS directement
       const cssInjections = new Set<string>();
       content.replace(
         /<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g,
@@ -237,7 +227,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
       );
 
-      // Lire et injecter les scripts JS directement
       const scriptInjections = new Set<string>();
       content = content.replace(
         /<script[^>]*src=["']([^"']+)\.js["'][^>]*><\/script>/g,
@@ -250,23 +239,22 @@ export function activate(context: vscode.ExtensionContext) {
             } catch (e) {
               console.error('Failed to load JS:', e);
             }
-            return ''; // Remove the script tag, will inject inline
+            return '';
           }
           return match;
         }
       );
 
-      // Traiter les autres ressources
       const processedContent = content
         .replace(
           /<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g,
-          '' // Supprimer les liens CSS car on les injecte directement
+          ''
         )
         .replace(
           /<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/g,
           (match, src) => {
             if (src.startsWith('http')) return match;
-            return ''; // Already handled above
+            return '';
           }
         )
         .replace(
@@ -296,26 +284,22 @@ export function activate(context: vscode.ExtensionContext) {
       `;
     };
 
-    // Debounce function for instant preview updates - reduced for faster response
     let updateTimeout: NodeJS.Timeout | null = null;
     const debounceUpdate = (content: string) => {
       if (updateTimeout) clearTimeout(updateTimeout);
       updateTimeout = setTimeout(() => {
         updateContent(content);
-      }, 50); // Reduced to 50ms for more instant updates
+      }, getDebounceTime());
     };
 
-    // Mise à jour initiale
     updateContent(document.getText());
 
-    // Écouter les changements
     const changeDisposable = vscode.workspace.onDidChangeTextDocument(e => {
       if (e.document === document) {
         debounceUpdate(e.document.getText());
       }
     });
 
-    // Nettoyage
     previewPanel.onDidDispose(() => {
       changeDisposable.dispose();
     });
@@ -339,7 +323,6 @@ export function activate(context: vscode.ExtensionContext) {
       if (!portInput) return;
       const port = parseInt(portInput, 10);
 
-      // Check if port is available
       const available = await isPortAvailable(port);
       if (!available) {
         const tryLabel = getTranslation('tryAnotherPort', 'Try Another Port');
@@ -352,7 +335,6 @@ export function activate(context: vscode.ExtensionContext) {
           cancelLabel
         );
         if (tryAgain === tryLabel) {
-          // For simplicity, do nothing and return (user can re-run)
           return;
         } else {
           return;
@@ -388,7 +370,6 @@ export function activate(context: vscode.ExtensionContext) {
         const docUri = document.uri;
         const documentDir = path.dirname(docUri.fsPath);
 
-        // Créer une webview pour la prévisualisation instantanée
         const previewPanel = vscode.window.createWebviewPanel(
           'instantPreview',
           getTranslation('instantPreviewTitle', 'Instant Preview'),
@@ -401,19 +382,15 @@ export function activate(context: vscode.ExtensionContext) {
           }
         );
 
-        // Ajouter l'icône
   const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
   previewPanel.iconPath = iconPath;
 
-        // Fonction pour convertir les chemins relatifs en chemins Webview
         const getWebviewUri = (relativePath: string) => {
           const absolutePath = path.join(documentDir, relativePath);
           return 'vscode-resource:' + absolutePath;
         };
 
-        // Fonction pour mettre à jour le contenu
         const updateContent = (content: string) => {
-          // Lire et injecter les fichiers CSS directement
           const cssInjections = new Set<string>();
           content.replace(
             /<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g,
@@ -431,7 +408,6 @@ export function activate(context: vscode.ExtensionContext) {
             }
           );
 
-          // Lire et injecter les scripts JS directement
           const scriptInjections = new Set<string>();
           content = content.replace(
             /<script[^>]*src=["']([^"']+)\.js["'][^>]*><\/script>/g,
@@ -444,23 +420,22 @@ export function activate(context: vscode.ExtensionContext) {
                 } catch (e) {
                   console.error('Failed to load JS:', e);
                 }
-                return ''; // Remove the script tag, will inject inline
+                return '';
               }
               return match;
             }
           );
 
-          // Traiter les autres ressources
           const processedContent = content
             .replace(
               /<link[^>]*href=["']([^"']+)\.css["'][^>]*>/g,
-              '' // Supprimer les liens CSS car on les injecte directement
+              ''
             )
             .replace(
               /<script[^>]*src=["']([^"']+)["'][^>]*><\/script>/g,
               (match, src) => {
                 if (src.startsWith('http')) return match;
-                return ''; // Already handled above
+                return '';
               }
             )
             .replace(
@@ -490,26 +465,22 @@ export function activate(context: vscode.ExtensionContext) {
           `;
         };
 
-        // Debounce function for instant preview updates
         let updateTimeout: NodeJS.Timeout | null = null;
         const debounceUpdate = (content: string) => {
           if (updateTimeout) clearTimeout(updateTimeout);
           updateTimeout = setTimeout(() => {
             updateContent(content);
-          }, 200); // Debounce to 200ms for instant preview
+          }, getDebounceTime());
         };
 
-        // Mise à jour initiale
         updateContent(document.getText());
 
-        // Écouter les changements
         const changeDisposable = vscode.workspace.onDidChangeTextDocument(e => {
           if (e.document === document) {
             debounceUpdate(e.document.getText());
           }
         });
 
-        // Nettoyage
         previewPanel.onDidDispose(() => {
           changeDisposable.dispose();
         });
@@ -518,73 +489,36 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       stopServer = startServer(folder, port, async () => {
-        if (choice === 'Open in default browser') {
+        if (choice === choiceBrowser) {
           open(url);
-        } else if (choice === 'Open in VS Code WebView (Beta)') {
-          console.log('Creating webview panel...');
-          if (!webviewPanel) {
-              const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
-                webviewPanel = vscode.window.createWebviewPanel(
-              'fastHttpWebview',
-              getTranslation('fastHttpServerTitle', 'Fast HTTP Server'),
-              vscode.ViewColumn.Two,
-              { 
-                enableScripts: true, 
-                retainContextWhenHidden: true,
-                    localResourceRoots: [vscode.Uri.file(folder), vscode.Uri.file(context.extensionPath)]
-              }
-            );
+        } else if (choice === choiceWebview) {
+          webviewPanel = vscode.window.createWebviewPanel(
+            'fastHttpServer',
+            getTranslation('fastHttpServerTitle', 'Fast HTTP Server'),
+            vscode.ViewColumn.One,
+            {
+              enableScripts: true,
+              retainContextWhenHidden: true,
+              localResourceRoots: [vscode.Uri.file(folder), vscode.Uri.file(context.extensionPath)]
+            }
+          );
+
+          try {
+            const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
             webviewPanel.iconPath = iconPath;
-            webviewPanel.onDidDispose(() => {
-              console.log('Webview disposed');
-              webviewPanel = null;
-            });
+          } catch (e) {
           }
-          console.log('Setting webview content for URL:', url);
-          // Localize loading text in webview and remember url/port for runtime updates
+
           currentWebviewUrl = url;
           currentWebviewPort = port;
           const loadingText = getTranslation('loading', 'Loading preview...');
           webviewPanel.webview.html = getWebviewContent(url, port, loadingText);
-          // Mettre à jour la webview quand le fichier change
-          // Surveiller les changements de fichiers sur le disque
-          const watcher = chokidar.watch(folder, {
-            ignoreInitial: true,
-            awaitWriteFinish: {
-              stabilityThreshold: 2,
-              pollInterval: 1
-            },
-            usePolling: true,
-            interval: 100,
-            binaryInterval: 100
-          });
-          
-          // Surveiller les changements dans l'éditeur (même non sauvegardés)
-          const changeTextDisposable = vscode.workspace.onDidChangeTextDocument((event) => {
-            const changedFilePath = event.document.uri.fsPath;
-            if (changedFilePath.startsWith(folder) && 
-               (changedFilePath.endsWith('.html') || 
-                changedFilePath.endsWith('.css') || 
-                changedFilePath.endsWith('.js'))) {
-              if (webviewPanel) {
-                const loadingText2 = getTranslation('loading', 'Loading preview...');
-                webviewPanel.webview.html = getWebviewContent(url, port, loadingText2);
-              }
-            }
-          });
 
-          watcher.on('all', () => {
-            if (webviewPanel) {
-              const loadingText3 = getTranslation('loading', 'Loading preview...');
-              webviewPanel.webview.html = getWebviewContent(url, port, loadingText3);
-            }
+          webviewPanel.onDidDispose(() => {
+            webviewPanel = null;
+            currentWebviewUrl = null;
+            currentWebviewPort = null;
           });
-
-          // Nettoyage des écouteurs d'événements
-          context.subscriptions.push(
-            { dispose: () => watcher.close() },
-            changeTextDisposable
-          );
         }
       });
 
@@ -605,12 +539,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(toggleCmd);
 
-  // Listen to configuration changes so language changes apply immediately
   const configChangeDisposable = vscode.workspace.onDidChangeConfiguration(e => {
     if (e.affectsConfiguration('liveServerSpeed.language')) {
-      // Re-apply translations to UI
       try { applyTranslations(); } catch (e) { /* ignore */ }
-      // If a webview is open and we know the url/port, refresh its HTML with new loading text
       if (webviewPanel && currentWebviewUrl && currentWebviewPort) {
         const loadingText = ((): string => {
           const lang = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.language', 'en') || 'en';
