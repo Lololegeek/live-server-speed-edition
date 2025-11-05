@@ -1,3 +1,25 @@
+## [1.1.5-beta.1] - 2025-11-05
+
+### Added
+
+
+- HTTPS Support , no certificates 😭
+- New choice Settings
+- More robust webview in HTTP
+- Change text of Start Fast HTTP
+
+### Fixed
+
+- Fixed the github link
+
+
+## [1.1.4] - 2025-11-02
+
+### Added
+
+- Added keywords
+
+
 ## [1.1.3] - 2025-10-20
 
 ### Fixed
