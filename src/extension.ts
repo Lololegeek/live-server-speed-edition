@@ -13,10 +13,10 @@ let currentWebviewPort: number | null = null;
 
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
-    start: '$(rocket) Start Fast HTTP',
-    stop: '$(debug-disconnect) Stop Fast HTTP',
-    startTooltip: 'Start Fast HTTP Server',
-    stopTooltip: 'Stop Fast HTTP Server',
+    start: '$(rocket) Start Live Server SE',
+    stop: '$(debug-disconnect) Stop Live Server SE',
+    startTooltip: 'Start Live Server SE',
+    stopTooltip: 'Stop Live Server SE',
     instantPreview: '$(eye) Instant Preview',
     instantPreviewTooltip: 'Show Instant Preview of current HTML file',
     noFolder: 'No folder is open in VS Code.',
@@ -35,14 +35,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cancel: 'Cancel',
     portInUse: 'Port {port} is already in use. Choose another port?',
     instantPreviewTitle: 'Instant Preview',
-    fastHttpServerTitle: 'Fast HTTP Server',
-    serverStopped: 'Server stopped.'
+    fastHttpServerTitle: 'Live Server SE',
+    serverStopped: 'Server stopped.',
+    chooseProtocol: 'Choose protocol (HTTPS requires accepting self-signed certificate)',
+    httpsNotSupportedWebview: 'HTTPS is not supported in VS Code WebView due to self-signed certificate restrictions. Opening in default browser instead.'
   },
   fr: {
-    start: '$(rocket) Démarrer Fast HTTP',
-    stop: '$(debug-disconnect) Arrêter Fast HTTP',
-    startTooltip: "Démarrer le serveur Fast HTTP",
-    stopTooltip: "Arrêter le serveur Fast HTTP",
+    start: '$(rocket) Démarrer Live Server SE',
+    stop: '$(debug-disconnect) Arrêter Live Server SE',
+    startTooltip: "Démarrer le serveur Live Server SE",
+    stopTooltip: "Arrêter le serveur Live Server SE",
     instantPreview: '$(eye) Prévisualisation instantanée',
     instantPreviewTooltip: "Afficher la prévisualisation du fichier HTML courant",
     noFolder: "Aucun dossier n'est ouvert dans VS Code.",
@@ -61,14 +63,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cancel: "Annuler",
     portInUse: "Le port {port} est déjà utilisé. Choisissez un autre port ?",
     instantPreviewTitle: "Prévisualisation instantanée",
-    fastHttpServerTitle: "Serveur Fast HTTP",
-    serverStopped: "Serveur arrêté."
+    fastHttpServerTitle: "Live Server SE",
+    serverStopped: "Serveur arrêté.",
+    chooseProtocol: "Choisir le protocole (HTTPS nécessite d'accepter le certificat auto-signé)",
+    httpsNotSupportedWebview: "HTTPS n'est pas supporté dans WebView VS Code en raison des restrictions de certificat auto-signé. Ouverture dans le navigateur par défaut à la place."
   },
   es: {
-    start: '$(rocket) Iniciar Fast HTTP',
-    stop: '$(debug-disconnect) Detener Fast HTTP',
-    startTooltip: 'Iniciar servidor Fast HTTP',
-    stopTooltip: 'Detener servidor Fast HTTP',
+    start: '$(rocket) Iniciar Live Server SE',
+    stop: '$(debug-disconnect) Detener Live Server SE',
+    startTooltip: 'Iniciar servidor Live Server SE',
+    stopTooltip: 'Detener servidor Live Server SE',
     instantPreview: '$(eye) Vista instantánea',
     instantPreviewTooltip: 'Mostrar vista previa del archivo HTML actual',
     noFolder: 'No hay ninguna carpeta abierta en VS Code.',
@@ -87,14 +91,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cancel: 'Cancelar',
     portInUse: 'El puerto {port} ya está en uso. ¿Elegir otro puerto?',
     instantPreviewTitle: 'Vista instantánea',
-    fastHttpServerTitle: 'Fast HTTP Server',
-    serverStopped: 'Servidor detenido.'
+    fastHttpServerTitle: 'Live Server SE',
+    serverStopped: 'Servidor detenido.',
+    chooseProtocol: 'Elegir protocolo (HTTPS requiere aceptar certificado auto-firmado)',
+    httpsNotSupportedWebview: 'HTTPS no es compatible en WebView de VS Code debido a restricciones de certificado auto-firmado. Abriendo en navegador predeterminado en su lugar.'
   },
   de: {
-    start: '$(rocket) Fast HTTP starten',
-    stop: '$(debug-disconnect) Fast HTTP stoppen',
-    startTooltip: 'Fast HTTP Server starten',
-    stopTooltip: 'Fast HTTP Server stoppen',
+    start: '$(rocket) Live Server SE starten',
+    stop: '$(debug-disconnect) Live Server SE stoppen',
+    startTooltip: 'Live Server SE Server starten',
+    stopTooltip: 'Live Server SE Server stoppen',
     instantPreview: '$(eye) Sofortvorschau',
     instantPreviewTooltip: 'Sofortvorschau der aktuellen HTML-Datei anzeigen',
     noFolder: 'Kein Ordner in VS Code geöffnet.',
@@ -113,8 +119,10 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cancel: 'Abbrechen',
     portInUse: 'Port {port} ist bereits in Verwendung. Wähle einen anderen Port?',
     instantPreviewTitle: 'Sofortvorschau',
-    fastHttpServerTitle: 'Fast HTTP Server',
-    serverStopped: 'Server gestoppt.'
+    fastHttpServerTitle: 'Live Server SE',
+    serverStopped: 'Server gestoppt.',
+    chooseProtocol: 'Protokoll wählen (HTTPS erfordert Akzeptanz des selbstsignierten Zertifikats)',
+    httpsNotSupportedWebview: 'HTTPS wird in VS Code WebView aufgrund von selbstsignierten Zertifikatsbeschränkungen nicht unterstützt. Stattdessen im Standardbrowser öffnen.'
   }
 };
 
@@ -146,7 +154,7 @@ export function activate(context: vscode.ExtensionContext) {
   }
 
   function getDebounceTime(): number {
-    return vscode.workspace.getConfiguration().get<number>('liveServerSpeed.debounceTime', 200) || 200;
+    return vscode.workspace.getConfiguration().get<number>('liveServerSpeed.debounceTime', 50) || 50;
   }
 
   const applyTranslations = () => {
@@ -351,11 +359,24 @@ export function activate(context: vscode.ExtensionContext) {
 
   const url = `http://localhost:${port}/${selectedFile}`;
 
+      const useHttps = await vscode.window.showQuickPick(
+        ['HTTP', 'HTTPS'],
+        { placeHolder: getTranslation('chooseProtocol', 'Choose protocol (HTTPS requires accepting self-signed certificate)') }
+      );
+
+      const isHttps = useHttps === 'HTTPS';
+
       const choicePreview = getTranslation('previewInstant', 'Preview without server (Instant)');
       const choiceBrowser = getTranslation('openDefault', 'Open in default browser');
       const choiceWebview = getTranslation('openWebview', 'Open in VS Code WebView (Beta)');
-      const choice = await vscode.window.showQuickPick(
-        [choicePreview, choiceBrowser, choiceWebview],
+
+      let choices = [choicePreview, choiceBrowser];
+      if (!isHttps) {
+        choices.push(choiceWebview);
+      }
+
+      let choice = await vscode.window.showQuickPick(
+        choices,
         { placeHolder: getTranslation('howPreview', 'How do you want to preview?') }
       );
 
@@ -488,9 +509,9 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      stopServer = startServer(folder, port, async () => {
+      stopServer = startServer(folder, port, async (serverUrl) => {
         if (choice === choiceBrowser) {
-          open(url);
+          open(serverUrl);
         } else if (choice === choiceWebview) {
           webviewPanel = vscode.window.createWebviewPanel(
             'fastHttpServer',
@@ -509,10 +530,10 @@ export function activate(context: vscode.ExtensionContext) {
           } catch (e) {
           }
 
-          currentWebviewUrl = url;
+          currentWebviewUrl = serverUrl;
           currentWebviewPort = port;
           const loadingText = getTranslation('loading', 'Loading preview...');
-          webviewPanel.webview.html = getWebviewContent(url, port, loadingText);
+          webviewPanel.webview.html = getWebviewContent(serverUrl, port, loadingText, isHttps);
 
           webviewPanel.onDidDispose(() => {
             webviewPanel = null;
@@ -520,9 +541,9 @@ export function activate(context: vscode.ExtensionContext) {
             currentWebviewPort = null;
           });
         }
-      });
+      }, undefined, isHttps);
 
-      statusButton.text = getTranslation('stop', '$(debug-disconnect) Stop Fast HTTP');
+      statusButton.text = getTranslation('stop', '$(debug-disconnect) Stop Live Server SE');
       statusButton.tooltip = getTranslation('stopTooltip', 'Stop Fast HTTP Server');
     } else {
       stopServer();
@@ -532,7 +553,7 @@ export function activate(context: vscode.ExtensionContext) {
         webviewPanel = null;
       }
       vscode.window.showInformationMessage(getTranslation('serverStopped', 'Server stopped.'));
-      statusButton.text = getTranslation('start', '$(rocket) Start Fast HTTP');
+      statusButton.text = getTranslation('start', '$(rocket) Start Live Server SE');
       statusButton.tooltip = getTranslation('startTooltip', 'Start Fast HTTP Server');
     }
   });
@@ -554,7 +575,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(configChangeDisposable);
 }
 
-function getWebviewContent(url: string, port: number, loadingText: string = 'Loading preview...'): string {
+function getWebviewContent(url: string, port: number, loadingText: string = 'Loading preview...', isHttps: boolean = false): string {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -593,9 +614,10 @@ function getWebviewContent(url: string, port: number, loadingText: string = 'Loa
       </iframe>
       <script>
         console.log('Connecting to WebSocket server...');
-        const ws = new WebSocket('ws://localhost:${port}');
+        const protocol = ${isHttps} ? 'wss' : 'ws';
+        const ws = new WebSocket(protocol + '://localhost:${port}');
         const frame = document.getElementById('previewFrame');
-        
+
         // Optimisation du rechargement
         let lastReloadTime = 0;
         ws.onmessage = () => {
@@ -603,7 +625,7 @@ function getWebviewContent(url: string, port: number, loadingText: string = 'Loa
           // Éviter les rechargements trop fréquents (min 100ms entre chaque)
           if (now - lastReloadTime < 100) return;
           lastReloadTime = now;
-          
+
           console.log('🔄 Reload triggered');
           // Utilise la méthode contentWindow.location.reload(true) pour un rechargement forcé
           try {
