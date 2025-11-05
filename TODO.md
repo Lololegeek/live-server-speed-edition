@@ -1,19 +1,19 @@
-# Improvements for Live Server Speed Edition 1.1.2
+# Improvements for Live Server Speed Edition 1.1.5
 
 ## Completed
 
 - [x] Multi-language UI (en, fr, es, de)
-- [x] All UI elements localized (status bar, tooltips, prompts, quick picks, notifications, webview loading)
 - [x] Language setting applies instantly (no restart needed)
-- [x] Localized error messages and quick pick options
 - [x] Robust config change handling
-- [x] Updated README and CHANGELOG
+- [x] Added Keywords
+- [x] Add configuration settings for debounce time
+- [x] Improve webview reload reliability
 
 ## Potential Future Improvements
 
-- Improve webview reload reliability
-- Add HTTPS support
-- Add multi-folder support
+- Add HTTPS support with certificates
+- More languages
+
 
 ## Fixed Issues
 
