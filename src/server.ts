@@ -2,9 +2,11 @@ import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import chokidar from 'chokidar';
 import http from 'http';
+import https from 'https';
 import path from 'path';
 import fs from 'fs';
 import compression from 'compression';
+import selfsigned from 'selfsigned';
 import { Request, Response, NextFunction } from 'express';
 
 
@@ -12,10 +14,24 @@ export function startServer(
   root: string,
   port: number,
   onReady: (url: string) => void,
-  debounceTime: number = 200
+  debounceTime: number = 200,
+  useHttps: boolean = false
 ) {
   const app = express();
-  const server = http.createServer(app);
+  let server: http.Server | https.Server;
+
+  if (useHttps) {
+    const attrs = [{ name: 'commonName', value: 'localhost' }];
+    const pems = selfsigned.generate(attrs, { days: 365 });
+    const options = {
+      key: pems.private,
+      cert: pems.cert
+    };
+    server = https.createServer(options, app);
+  } else {
+    server = http.createServer(app);
+  }
+
   const wss = new WebSocketServer({ server });
 
   app.use(compression());
@@ -30,10 +46,11 @@ export function startServer(
     const filePath = path.join(root, req.url === '/' ? '/index.html' : req.url);
     if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
       let html = fs.readFileSync(filePath, 'utf-8');
+      const protocol = useHttps ? 'wss' : 'ws';
       html = html.replace(
         '</body>',
         `<script>
-          const ws = new WebSocket('ws://localhost:${port}');
+          const ws = new WebSocket('${protocol}://localhost:${port}');
           ws.onmessage = () => {
             console.log('🔄 Reload triggered');
             location.reload();
@@ -67,7 +84,8 @@ export function startServer(
   });
 
   server.listen(port, () => {
-    const url = `http://localhost:${port}`;
+    const protocol = useHttps ? 'https' : 'http';
+    const url = `${protocol}://localhost:${port}`;
     console.log(`🚀 Server running at ${url}`);
     onReady(url);
   });
