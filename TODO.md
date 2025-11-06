@@ -8,11 +8,14 @@
 - [x] Added Keywords
 - [x] Add configuration settings for debounce time
 - [x] Improve webview reload reliability
+- [x] Optimize the code for Live Server reload in 1 Sec
+
 
 ## Potential Future Improvements
 
 - Add HTTPS support with certificates
 - More languages
+- CLI (CMD command) (EXE App)
 
 
 ## Fixed Issues
