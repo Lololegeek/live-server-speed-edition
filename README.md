@@ -24,7 +24,7 @@ Zero configuration — just open a folder and go
 
 Default port: 5500
 
-**Multi-language UI**: English, Français, Español, Deutsch
+**Multi-language UI**: English, Français, Español, Deutsch, 中文, Português, Русский
 **Dynamic UI**: Change language in settings, UI updates instantly (no restart needed)
 **Localized prompts, quick picks, tooltips, notifications, and webview loading text**
 
@@ -50,9 +50,9 @@ If you select Français, you’ll see:
 
 1. Open a folder in VS Code
 2. (Optional) Set your language: Go to Settings > liveServerSpeed.language
-3. Click Start Fast HTTP in the status bar
+3. Click Start Live Server SE in the status bar
 4. Choose your preferred view (browser or WebView)
-5. Edit your files — the page reloads automatically after two seconds 💨
+5. Edit your files — the page reloads automatically after one second 💨
 
 📦 Installation
 Install from the Visual Studio Code Marketplace Or via CLI:
