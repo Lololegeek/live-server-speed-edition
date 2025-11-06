@@ -14,7 +14,7 @@ export function startServer(
   root: string,
   port: number,
   onReady: (url: string) => void,
-  debounceTime: number = 200,
+  debounceTime: number = 5,
   useHttps: boolean = false
 ) {
   const app = express();
@@ -74,8 +74,8 @@ export function startServer(
       pollInterval: 1
     },
     usePolling: true,
-    interval: 100,
-    binaryInterval: 100
+    interval: 10,
+    binaryInterval: 10
   }).on('all', (event, path) => {
     if (path.includes('node_modules') || path.startsWith('.') || path.includes('~') || path.endsWith('.tmp')) {
       return;
