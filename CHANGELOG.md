@@ -1,3 +1,16 @@
+## [1.1.5] - 2025-11-06
+
+
+### Improved
+
+- Change the default value on debounce time (50ms)
+- Optimize the code for Live Server reload in 1 Sec !
+- Added more Keywords
+
+### Added
+
+- Ignore node_modules and more in the .vscodeignore
+
 ## [1.1.5-beta.1] - 2025-11-05
 
 ### Added
