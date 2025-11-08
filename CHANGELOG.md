@@ -1,4 +1,12 @@
-## [1.1.5] - 2025-11-06
+## [1.2.0] - 2025-11-08
+
+### Added
+
+- Reduce the size of extension
+
+### Improved
+
+- Update to 1.2.0 because problem for the versions in VS Code marketplace
 
 
 ### Improved
