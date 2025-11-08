@@ -1,12 +1,15 @@
-## [1.2.0] - 2025-11-08
+## [1.2.1] - 2025-11-08
+
+### Fixed
+
+- I fixed the bug that was causing the buttons not to display (The bug is here beceause i have exclude node_modules in .vscodeignore)
 
 ### Added
 
-- Reduce the size of extension
+- Added category
 
-### Improved
 
-- Update to 1.2.0 because problem for the versions in VS Code marketplace
+## [1.2.0] - 2025-11-08
 
 
 ### Improved
@@ -14,10 +17,12 @@
 - Change the default value on debounce time (50ms)
 - Optimize the code for Live Server reload in 1 Sec !
 - Added more Keywords
+- Update to 1.2.0 because problem for the versions in VS Code marketplace
 
 ### Added
 
 - Ignore node_modules and more in the .vscodeignore
+- Reduce the size of extension
 
 ## [1.1.5-beta.1] - 2025-11-05
 
