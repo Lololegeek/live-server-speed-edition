@@ -2,7 +2,7 @@
   "name": "live-server-speed-edition",
   "displayName": "Live Server Speed Edition",
   "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "keywords": [
   "live server",
   "live preview",
