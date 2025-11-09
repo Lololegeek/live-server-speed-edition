@@ -1,3 +1,10 @@
+## [1.2.2] - 2025-11-09
+
+### Added
+
+- Change settings lang on your choices
+- Hotkey for launch server
+
 ## [1.2.1] - 2025-11-08
 
 ### Fixed
@@ -8,9 +15,7 @@
 
 - Added category
 
-
 ## [1.2.0] - 2025-11-08
-
 
 ### Improved
 
@@ -28,7 +33,6 @@
 
 ### Added
 
-
 - HTTPS Support , no certificates 😭
 - New choice Settings
 - More robust webview in HTTP
@@ -38,13 +42,11 @@
 
 - Fixed the github link
 
-
 ## [1.1.4] - 2025-11-02
 
 ### Added
 
 - Added keywords
-
 
 ## [1.1.3] - 2025-10-20
 
@@ -57,7 +59,7 @@
 
 ### Added
 
-- Delete commentaries 
+- Delete commentaries
 - Debounce settings
 
 ## [1.1.2] - 2025-10-14
