@@ -1,0 +1,126 @@
+{
+  "name": "live-server-speed-edition",
+  "displayName": "Live Server Speed Edition",
+  "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
+  "version": "1.2.1",
+  "keywords": [
+    "live server",
+    "live preview",
+    "reload",
+    "auto reload",
+    "hot reload",
+    "local server",
+    "web development",
+    "frontend",
+    "html",
+    "css",
+    "javascript",
+    "typescript",
+    "extension",
+    "vscode",
+    "development",
+    "localhost",
+    "http server",
+    "http",
+    "https",
+    "localhost server",
+    "live",
+    "preview",
+    "reloads",
+    "auto",
+    "hot",
+    "local",
+    "server",
+    "Microsoft",
+    "WebView",
+    "speed",
+    "web",
+    "Live Server",
+    "fast",
+    "productivity",
+    "developer tools"
+  ],
+  "publisher": "Lololegeek",
+  "icon": "icon.png",
+  "repository": "https://github.com/Lololegeek/live-server-speed-edition",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fast-http-server.toggleServer",
+        "title": "Start Fast HTTP Server"
+      },
+      {
+        "command": "fast-http-server.relaunchLast",
+        "title": "Relaunch Live Server with Last Parameters"
+      },
+      {
+        "command": "fast-http-server.setShortcut",
+        "title": "Set Relaunch Shortcut"
+      }
+    ],
+
+    "configuration": {
+      "type": "object",
+      "title": "Live Server Speed Edition",
+      "properties": {
+        "liveServerSpeed.language": {
+          "type": "string",
+          "enum": [
+            "en",
+            "fr",
+            "es",
+            "de"
+          ],
+          "default": "en",
+          "description": "Language used by the extension (en, fr, es, de)"
+        },
+        "liveServerSpeed.debounceTime": {
+          "type": "number",
+          "default": 50,
+          "minimum": 50,
+          "maximum": 1000,
+          "description": "Debounce time in milliseconds for file change detection and instant preview updates (50-1000ms)"
+        },
+        "liveServerSpeed.relaunchShortcut": {
+          "type": "string",
+          "default": "F3",
+          "description": "Default keyboard shortcut for relaunching the server with last parameters (user can override in keybindings.json)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.5.0",
+    "@types/open": "^6.1.0",
+    "@types/ws": "^8.5.4",
+    "mocha": "^11.7.1",
+    "typescript": "^5.2.0",
+    "vscode": "^1.1.35"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "compression": "^1.8.1",
+    "express": "^5.1.0",
+    "open": "^10.2.0",
+    "selfsigned": "^2.1.1",
+    "ws": "^8.13.0"
+  }
+}
