@@ -85,7 +85,6 @@
         "when": "workspaceFolderCount != 0"
       }
     ],
-
     "configuration": {
       "type": "object",
       "title": "Live Server Speed Edition",

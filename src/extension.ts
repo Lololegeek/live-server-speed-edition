@@ -10,8 +10,11 @@ let webviewPanel: vscode.WebviewPanel | null = null;
 let statusButton: vscode.StatusBarItem;
 let currentWebviewUrl: string | null = null;
 let currentWebviewPort: number | null = null;
+<<<<<<< HEAD
 let lastServerParams: { folder: string; port: number; selectedFile: string; useHttps: boolean; choice: string } | null = null;
 let customShortcut: string | null = null;
+=======
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
 
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
@@ -40,12 +43,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     fastHttpServerTitle: 'Live Server SE',
     serverStopped: 'Server stopped.',
     chooseProtocol: 'Choose protocol (HTTPS requires accepting self-signed certificate)',
+<<<<<<< HEAD
     httpsNotSupportedWebview: 'HTTPS is not supported in VS Code WebView due to self-signed certificate restrictions. Opening in default browser instead.',
     openKeybindingsMessage: 'In the Keyboard Shortcuts editor, search for "Live Server Speed Edition" to see and modify shortcuts for the extension.',
     languageDescription: 'Language used by the extension (en, fr, es, de)',
     debounceTimeDescription: 'Debounce time in milliseconds for file change detection and instant preview updates (50-1000ms)',
     relaunchShortcutDescription: 'Default keyboard shortcut for relaunching the server with last parameters (user can override in keybindings.json)',
     openKeybindingsDescription: 'Open Keyboard Shortcuts for Live Server Speed Edition (set to true to open)'
+=======
+    httpsNotSupportedWebview: 'HTTPS is not supported in VS Code WebView due to self-signed certificate restrictions. Opening in default browser instead.'
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
   },
   fr: {
     start: '$(rocket) Démarrer Live Server SE',
@@ -73,12 +80,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     fastHttpServerTitle: "Live Server SE",
     serverStopped: "Serveur arrêté.",
     chooseProtocol: "Choisir le protocole (HTTPS nécessite d'accepter le certificat auto-signé)",
+<<<<<<< HEAD
     httpsNotSupportedWebview: "HTTPS n'est pas supporté dans WebView VS Code en raison des restrictions de certificat auto-signé. Ouverture dans le navigateur par défaut à la place.",
     openKeybindingsMessage: "Dans l'éditeur de raccourcis clavier, recherchez 'Live Server Speed Edition' pour voir et modifier les raccourcis de l'extension.",
     languageDescription: "Langue utilisée par l'extension (en, fr, es, de)",
     debounceTimeDescription: "Temps de debounce en millisecondes pour la détection des changements de fichiers et les mises à jour de prévisualisation instantanée (50-1000ms)",
     relaunchShortcutDescription: "Raccourci clavier par défaut pour relancer le serveur avec les derniers paramètres (l'utilisateur peut le remplacer dans keybindings.json)",
     openKeybindingsDescription: "Ouvrir les Raccourcis Clavier pour Live Server Speed Edition (mettre à true pour ouvrir)"
+=======
+    httpsNotSupportedWebview: "HTTPS n'est pas supporté dans WebView VS Code en raison des restrictions de certificat auto-signé. Ouverture dans le navigateur par défaut à la place."
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
   },
   es: {
     start: '$(rocket) Iniciar Live Server SE',
@@ -106,12 +117,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     fastHttpServerTitle: 'Live Server SE',
     serverStopped: 'Servidor detenido.',
     chooseProtocol: 'Elegir protocolo (HTTPS requiere aceptar certificado auto-firmado)',
+<<<<<<< HEAD
     httpsNotSupportedWebview: 'HTTPS no es compatible en WebView de VS Code debido a restricciones de certificado auto-firmado. Abriendo en navegador predeterminado en su lugar.',
     openKeybindingsMessage: 'En el editor de atajos de teclado, busca "Live Server Speed Edition" para ver y modificar los atajos de la extensión.',
     languageDescription: 'Idioma utilizado por la extensión (en, fr, es, de)',
     debounceTimeDescription: 'Tiempo de debounce en milisegundos para la detección de cambios de archivos y actualizaciones de vista previa instantánea (50-1000ms)',
     relaunchShortcutDescription: 'Atajo de teclado predeterminado para relanzar el servidor con los últimos parámetros (el usuario puede anularlo en keybindings.json)',
     openKeybindingsDescription: 'Abrir Atajos de Teclado para Live Server Speed Edition (establecer en true para abrir)'
+=======
+    httpsNotSupportedWebview: 'HTTPS no es compatible en WebView de VS Code debido a restricciones de certificado auto-firmado. Abriendo en navegador predeterminado en su lugar.'
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
   },
   de: {
     start: '$(rocket) Live Server SE starten',
@@ -139,12 +154,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     fastHttpServerTitle: 'Live Server SE',
     serverStopped: 'Server gestoppt.',
     chooseProtocol: 'Protokoll wählen (HTTPS erfordert Akzeptanz des selbstsignierten Zertifikats)',
+<<<<<<< HEAD
     httpsNotSupportedWebview: 'HTTPS wird in VS Code WebView aufgrund von selbstsignierten Zertifikatsbeschränkungen nicht unterstützt. Stattdessen im Standardbrowser öffnen.',
     openKeybindingsMessage: 'Im Tastenkürzeleditor suchen Sie nach "Live Server Speed Edition", um die Tastenkürzel für die Erweiterung anzuzeigen und zu ändern.',
     languageDescription: 'Sprache, die von der Erweiterung verwendet wird (en, fr, es, de)',
     debounceTimeDescription: 'Debounce-Zeit in Millisekunden für die Dateiänderungserkennung und sofortige Vorschau-Updates (50-1000ms)',
     relaunchShortcutDescription: 'Standard-Tastenkürzel zum Neustarten des Servers mit den letzten Parametern (Benutzer kann es in keybindings.json überschreiben)',
     openKeybindingsDescription: 'Tastenkürzel für Live Server Speed Edition öffnen (auf true setzen, um zu öffnen)'
+=======
+    httpsNotSupportedWebview: 'HTTPS wird in VS Code WebView aufgrund von selbstsignierten Zertifikatsbeschränkungen nicht unterstützt. Stattdessen im Standardbrowser öffnen.'
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
   }
 };
 
@@ -175,11 +194,14 @@ export function activate(context: vscode.ExtensionContext) {
     return tr[key] || fallback;
   }
 
+<<<<<<< HEAD
   function getConfigTranslation(key: string): string {
     const lang = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.language', 'en') || 'en';
     return TRANSLATIONS[lang]?.[key] || TRANSLATIONS.en[key] || key;
   }
 
+=======
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
   function getDebounceTime(): number {
     return vscode.workspace.getConfiguration().get<number>('liveServerSpeed.debounceTime', 50) || 50;
   }
@@ -384,7 +406,11 @@ export function activate(context: vscode.ExtensionContext) {
 
       if (!selectedFile) return;
 
+<<<<<<< HEAD
       const url = `http://localhost:${port}/${selectedFile}`;
+=======
+  const url = `http://localhost:${port}/${selectedFile}`;
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
 
       const useHttps = await vscode.window.showQuickPick(
         ['HTTP', 'HTTPS'],
@@ -407,9 +433,12 @@ export function activate(context: vscode.ExtensionContext) {
         { placeHolder: getTranslation('howPreview', 'How do you want to preview?') }
       );
 
+<<<<<<< HEAD
       // Store last parameters
       lastServerParams = { folder, port, selectedFile, useHttps: isHttps, choice: choice || '' };
 
+=======
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
       if (choice === choicePreview) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -590,6 +619,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(toggleCmd);
 
+<<<<<<< HEAD
   const relaunchCmd = vscode.commands.registerCommand('fast-http-server.relaunchLast', async () => {
     if (!lastServerParams) {
       // If no previous launch, start the full server setup
@@ -1035,6 +1065,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(openKeybindingsCmd);
 
+=======
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
   const configChangeDisposable = vscode.workspace.onDidChangeConfiguration(e => {
     if (e.affectsConfiguration('liveServerSpeed.language')) {
       try { applyTranslations(); } catch (e) { /* ignore */ }
@@ -1046,6 +1078,7 @@ export function activate(context: vscode.ExtensionContext) {
         webviewPanel.webview.html = getWebviewContent(currentWebviewUrl, currentWebviewPort, loadingText);
       }
     }
+<<<<<<< HEAD
     if (e.affectsConfiguration('liveServerSpeed.openKeybindings')) {
       const openKeybindings = vscode.workspace.getConfiguration().get<boolean>('liveServerSpeed.openKeybindings', false);
       if (openKeybindings) {
@@ -1054,6 +1087,8 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.getConfiguration().update('liveServerSpeed.openKeybindings', false, vscode.ConfigurationTarget.Global);
       }
     }
+=======
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
   });
   context.subscriptions.push(configChangeDisposable);
 }
@@ -1131,4 +1166,8 @@ function getWebviewContent(url: string, port: number, loadingText: string = 'Loa
 export function deactivate() {
   if (stopServer) stopServer();
   if (webviewPanel) webviewPanel.dispose();
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 769e5b18d6a71a9de5692c20e8732abf2da46bce
