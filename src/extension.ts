@@ -40,7 +40,12 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     fastHttpServerTitle: 'Live Server SE',
     serverStopped: 'Server stopped.',
     chooseProtocol: 'Choose protocol (HTTPS requires accepting self-signed certificate)',
-    httpsNotSupportedWebview: 'HTTPS is not supported in VS Code WebView due to self-signed certificate restrictions. Opening in default browser instead.'
+    httpsNotSupportedWebview: 'HTTPS is not supported in VS Code WebView due to self-signed certificate restrictions. Opening in default browser instead.',
+    openKeybindingsMessage: 'In the Keyboard Shortcuts editor, search for "Live Server Speed Edition" to see and modify shortcuts for the extension.',
+    languageDescription: 'Language used by the extension (en, fr, es, de)',
+    debounceTimeDescription: 'Debounce time in milliseconds for file change detection and instant preview updates (50-1000ms)',
+    relaunchShortcutDescription: 'Default keyboard shortcut for relaunching the server with last parameters (user can override in keybindings.json)',
+    openKeybindingsDescription: 'Open Keyboard Shortcuts for Live Server Speed Edition (set to true to open)'
   },
   fr: {
     start: '$(rocket) Démarrer Live Server SE',
@@ -68,7 +73,12 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     fastHttpServerTitle: "Live Server SE",
     serverStopped: "Serveur arrêté.",
     chooseProtocol: "Choisir le protocole (HTTPS nécessite d'accepter le certificat auto-signé)",
-    httpsNotSupportedWebview: "HTTPS n'est pas supporté dans WebView VS Code en raison des restrictions de certificat auto-signé. Ouverture dans le navigateur par défaut à la place."
+    httpsNotSupportedWebview: "HTTPS n'est pas supporté dans WebView VS Code en raison des restrictions de certificat auto-signé. Ouverture dans le navigateur par défaut à la place.",
+    openKeybindingsMessage: "Dans l'éditeur de raccourcis clavier, recherchez 'Live Server Speed Edition' pour voir et modifier les raccourcis de l'extension.",
+    languageDescription: "Langue utilisée par l'extension (en, fr, es, de)",
+    debounceTimeDescription: "Temps de debounce en millisecondes pour la détection des changements de fichiers et les mises à jour de prévisualisation instantanée (50-1000ms)",
+    relaunchShortcutDescription: "Raccourci clavier par défaut pour relancer le serveur avec les derniers paramètres (l'utilisateur peut le remplacer dans keybindings.json)",
+    openKeybindingsDescription: "Ouvrir les Raccourcis Clavier pour Live Server Speed Edition (mettre à true pour ouvrir)"
   },
   es: {
     start: '$(rocket) Iniciar Live Server SE',
@@ -96,7 +106,12 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     fastHttpServerTitle: 'Live Server SE',
     serverStopped: 'Servidor detenido.',
     chooseProtocol: 'Elegir protocolo (HTTPS requiere aceptar certificado auto-firmado)',
-    httpsNotSupportedWebview: 'HTTPS no es compatible en WebView de VS Code debido a restricciones de certificado auto-firmado. Abriendo en navegador predeterminado en su lugar.'
+    httpsNotSupportedWebview: 'HTTPS no es compatible en WebView de VS Code debido a restricciones de certificado auto-firmado. Abriendo en navegador predeterminado en su lugar.',
+    openKeybindingsMessage: 'En el editor de atajos de teclado, busca "Live Server Speed Edition" para ver y modificar los atajos de la extensión.',
+    languageDescription: 'Idioma utilizado por la extensión (en, fr, es, de)',
+    debounceTimeDescription: 'Tiempo de debounce en milisegundos para la detección de cambios de archivos y actualizaciones de vista previa instantánea (50-1000ms)',
+    relaunchShortcutDescription: 'Atajo de teclado predeterminado para relanzar el servidor con los últimos parámetros (el usuario puede anularlo en keybindings.json)',
+    openKeybindingsDescription: 'Abrir Atajos de Teclado para Live Server Speed Edition (establecer en true para abrir)'
   },
   de: {
     start: '$(rocket) Live Server SE starten',
@@ -124,7 +139,12 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     fastHttpServerTitle: 'Live Server SE',
     serverStopped: 'Server gestoppt.',
     chooseProtocol: 'Protokoll wählen (HTTPS erfordert Akzeptanz des selbstsignierten Zertifikats)',
-    httpsNotSupportedWebview: 'HTTPS wird in VS Code WebView aufgrund von selbstsignierten Zertifikatsbeschränkungen nicht unterstützt. Stattdessen im Standardbrowser öffnen.'
+    httpsNotSupportedWebview: 'HTTPS wird in VS Code WebView aufgrund von selbstsignierten Zertifikatsbeschränkungen nicht unterstützt. Stattdessen im Standardbrowser öffnen.',
+    openKeybindingsMessage: 'Im Tastenkürzeleditor suchen Sie nach "Live Server Speed Edition", um die Tastenkürzel für die Erweiterung anzuzeigen und zu ändern.',
+    languageDescription: 'Sprache, die von der Erweiterung verwendet wird (en, fr, es, de)',
+    debounceTimeDescription: 'Debounce-Zeit in Millisekunden für die Dateiänderungserkennung und sofortige Vorschau-Updates (50-1000ms)',
+    relaunchShortcutDescription: 'Standard-Tastenkürzel zum Neustarten des Servers mit den letzten Parametern (Benutzer kann es in keybindings.json überschreiben)',
+    openKeybindingsDescription: 'Tastenkürzel für Live Server Speed Edition öffnen (auf true setzen, um zu öffnen)'
   }
 };
 
@@ -153,6 +173,11 @@ export function activate(context: vscode.ExtensionContext) {
     const lang = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.language', 'en') || 'en';
     const tr = TRANSLATIONS[lang] || TRANSLATIONS.en;
     return tr[key] || fallback;
+  }
+
+  function getConfigTranslation(key: string): string {
+    const lang = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.language', 'en') || 'en';
+    return TRANSLATIONS[lang]?.[key] || TRANSLATIONS.en[key] || key;
   }
 
   function getDebounceTime(): number {
@@ -1002,6 +1027,14 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(setShortcutCmd);
 
+  const openKeybindingsCmd = vscode.commands.registerCommand('fast-http-server.openKeybindings', async () => {
+    await vscode.commands.executeCommand('workbench.action.openGlobalKeybindings');
+    const message = getTranslation('openKeybindingsMessage', 'In the Keyboard Shortcuts editor, search for "Live Server Speed Edition" to see and modify shortcuts for the extension.');
+    vscode.window.showInformationMessage(message);
+  });
+
+  context.subscriptions.push(openKeybindingsCmd);
+
   const configChangeDisposable = vscode.workspace.onDidChangeConfiguration(e => {
     if (e.affectsConfiguration('liveServerSpeed.language')) {
       try { applyTranslations(); } catch (e) { /* ignore */ }
@@ -1011,6 +1044,14 @@ export function activate(context: vscode.ExtensionContext) {
           return TRANSLATIONS[lang]?.loading || TRANSLATIONS.en.loading;
         })();
         webviewPanel.webview.html = getWebviewContent(currentWebviewUrl, currentWebviewPort, loadingText);
+      }
+    }
+    if (e.affectsConfiguration('liveServerSpeed.openKeybindings')) {
+      const openKeybindings = vscode.workspace.getConfiguration().get<boolean>('liveServerSpeed.openKeybindings', false);
+      if (openKeybindings) {
+        vscode.commands.executeCommand('fast-http-server.openKeybindings');
+        // Reset to false after opening
+        vscode.workspace.getConfiguration().update('liveServerSpeed.openKeybindings', false, vscode.ConfigurationTarget.Global);
       }
     }
   });

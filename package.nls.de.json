@@ -1,0 +1,6 @@
+{
+  "liveServerSpeed.language.description": "Sprache, die von der Erweiterung verwendet wird (en, fr, es, de) (Die Einstellungen ändern die Sprache nach dem Neustart von VS Code)",
+  "liveServerSpeed.debounceTime.description": "Debounce-Zeit in Millisekunden für die Dateiänderungserkennung und sofortige Vorschau-Updates (50-1000ms)",
+  "liveServerSpeed.relaunchShortcut.description": "Standard-Tastenkürzel zum Neustarten des Servers mit den letzten Parametern (Benutzer kann es in keybindings.json überschreiben)",
+  "liveServerSpeed.openKeybindings.description": "Tastenkürzel für Live Server Speed Edition öffnen (auf true setzen, um zu öffnen)"
+}

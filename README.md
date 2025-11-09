@@ -53,6 +53,7 @@ If you select Français, you’ll see:
 3. Click Start Live Server SE in the status bar
 4. Choose your preferred view (browser or WebView)
 5. Edit your files — the page reloads automatically after one second 💨
+6. If you want, you can choose a keyboard key from the settings to restart the server with the same parameters as last time.
 
 📦 Installation
 Install from the Visual Studio Code Marketplace Or via CLI:
@@ -71,13 +72,12 @@ VS Code API
 ✨ Why This Edition?
 Because traditional live servers can be slow or bloated. This edition focuses on speed, simplicity, native integration, and now multi-language support. No config files. No clutter. Just fast results.
 
-Planned / Experimental:
+Experimental:
 
 - HTTPS support
-- Multi-folder support
 
 👨‍💻 Author
 Created with ❤️ by Lololegeek
 Want to contribute or suggest a feature? Open an issue or submit a PR!
 
-Let me know if you'd like a shorter version for the Marketplace summary or a visual banner to go with it!
+Let me know if you'd like a little version , just button and it launch in webview for best performance

@@ -1,8 +1,8 @@
 {
   "name": "live-server-speed-edition",
-  "displayName": "Live Server Speed Edition",
+  "displayName": "Live Server Speed Edition 🚀",
   "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "keywords": [
     "live server",
     "live preview",
@@ -47,7 +47,8 @@
     "vscode": "^1.80.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Other"
   ],
   "activationEvents": [
     "*"
@@ -66,6 +67,22 @@
       {
         "command": "fast-http-server.setShortcut",
         "title": "Set Relaunch Shortcut"
+      },
+      {
+        "command": "fast-http-server.openKeybindings",
+        "title": "Open Keyboard Shortcuts for Live Server Speed Edition"
+      },
+      {
+        "command": "fast-http-server.openSettings",
+        "title": "Open Extension Settings"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "fast-http-server.toggleServer",
+        "key": "ctrl+alt+l",
+        "mac": "cmd+alt+l",
+        "when": "workspaceFolderCount != 0"
       }
     ],
 
@@ -82,19 +99,19 @@
             "de"
           ],
           "default": "en",
-          "description": "Language used by the extension (en, fr, es, de)"
+          "description": "%liveServerSpeed.language.description%"
         },
         "liveServerSpeed.debounceTime": {
           "type": "number",
           "default": 50,
           "minimum": 50,
           "maximum": 1000,
-          "description": "Debounce time in milliseconds for file change detection and instant preview updates (50-1000ms)"
+          "description": "%liveServerSpeed.debounceTime.description%"
         },
-        "liveServerSpeed.relaunchShortcut": {
-          "type": "string",
-          "default": "F3",
-          "description": "Default keyboard shortcut for relaunching the server with last parameters (user can override in keybindings.json)"
+        "liveServerSpeed.openKeybindings": {
+          "type": "boolean",
+          "default": false,
+          "description": "%liveServerSpeed.openKeybindings.description%"
         }
       }
     }

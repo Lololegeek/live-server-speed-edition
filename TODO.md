@@ -1,4 +1,4 @@
-# Improvements for Live Server Speed Edition 1.3.0
+# Improvements for Live Server Speed Edition 1.2.2
 
 ## Completed
 
@@ -9,6 +9,7 @@
 - [x] Add configuration settings for debounce time
 - [x] Improve webview reload reliability
 - [x] Optimize the code for Live Server reload in 1 Sec
+- [x] Key for start server
 
 
 ## Potential Future Improvements
@@ -16,6 +17,7 @@
 - Add HTTPS support with certificates
 - More languages
 - CLI (CMD command) (EXE App)
+- QR Code button
 
 
 ## Fixed Issues
