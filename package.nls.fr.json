@@ -2,5 +2,9 @@
   "liveServerSpeed.language.description": "Langue utilisée par l'extension (en, fr, es, de) (Les paramètres changeront de langue après le redémarrage de VS Code)",
   "liveServerSpeed.debounceTime.description": "Temps de debounce en millisecondes pour la détection des changements de fichiers et les mises à jour de prévisualisation instantanée (50-1000ms)",
   "liveServerSpeed.relaunchShortcut.description": "Raccourci clavier par défaut pour relancer le serveur avec les derniers paramètres (l'utilisateur peut le remplacer dans keybindings.json)",
-  "liveServerSpeed.openKeybindings.description": "Ouvrir les Raccourcis Clavier pour Live Server Speed Edition (mettre à true pour ouvrir)"
+  "liveServerSpeed.openKeybindings.description": "Ouvrir les Raccourcis Clavier pour Live Server Speed Edition (mettre à true pour ouvrir)",
+  "liveServerSpeed.defaultIP.description": "Adresse IP par défaut pour le serveur (laisser vide pour auto-détection)",
+  "liveServerSpeed.httpsCertPath.description": "Chemin vers le fichier de certificat TLS à utiliser pour HTTPS (optionnel). Si vide et que la génération automatique est activée, l'extension en créera un.",
+  "liveServerSpeed.httpsKeyPath.description": "Chemin vers la clé privée TLS à utiliser pour HTTPS (optionnel). Si vide et que la génération automatique est activée, l'extension en créera une.",
+  "liveServerSpeed.httpsAutoGenerate.description": "Si true, l'extension générera automatiquement et stockera un certificat auto-signé pour HTTPS si aucun chemin n'est fourni."
 }
