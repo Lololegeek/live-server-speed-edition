@@ -1,4 +1,4 @@
-# Improvements for Live Server Speed Edition 1.2.2
+# Improvements for Live Server Speed Edition 1.2.4
 
 ## Completed
 
@@ -10,15 +10,14 @@
 - [x] Improve webview reload reliability
 - [x] Optimize the code for Live Server reload in 1 Sec
 - [x] Key for start server
-
+- [x] Add QR Code button in webview for easy server access
+- [x] Network accessibility (allow access from other devices on the same network)
 
 ## Potential Future Improvements
 
 - Add HTTPS support with certificates
 - More languages
 - CLI (CMD command) (EXE App)
-- QR Code button
-
 
 ## Fixed Issues
 
