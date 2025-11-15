@@ -4,29 +4,21 @@ A blazing-fast local HTTP server with live reload — built right into VS Code.
 Live Server Speed Edition is a lightweight, no-fuss extension that lets you spin up a local HTTP server instantly and reloads your page automatically whenever you make changes. Whether you're prototyping HTML or building a full JS app, this tool keeps your workflow fast and fluid.
 
 ⚡ Features
-One-click server launch from the status bar
 
-Instant live reload using WebSocket and Chokidar
-
-Choose between:
-
-HTTPS
-Or
-HTTP
-
-🌐 Opening in your default browser
-
-🧩 Viewing directly inside VS Code via WebView
-
-INSTANT Reload New Edition 🤯
-
-Zero configuration — just open a folder and go
-
-Default port: 5500
-
-**Multi-language UI**: English, Français, Español, Deutsch, 中文, Português, Русский
-**Dynamic UI**: Change language in settings, UI updates instantly (no restart needed)
-**Localized prompts, quick picks, tooltips, notifications, and webview loading text**
+- **One-click server launch** from the status bar
+- **Instant live reload** using WebSocket and Chokidar
+- **QR Code for mobile access**: Display QR codes directly in WebView to quickly access your server from mobile devices on the local network
+- **Multiple preview modes**:
+  - 🌐 Open in default browser
+  - 🧩 View directly inside VS Code via WebView
+  - ⚡ Instant Preview (without server)
+- **Protocol support**: HTTP and HTTPS (with self-signed certificates support)
+- **HTTPS in WebView**: Full HTTPS support in VS Code WebView with auto-reconnect on connection loss
+- **Zero configuration** — just open a folder and go
+- **Default port**: 5500
+- **Network accessible**: Access your server from other devices on the same network (e.g., mobile testing) using your local IP address
+- **Multi-language UI**: English, Français, Español, Deutsch
+- **Dynamic UI**: Change language in settings, UI updates instantly (no restart needed)
 
 ## Multi-language & Dynamic UI
 
