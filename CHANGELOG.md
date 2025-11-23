@@ -1,3 +1,18 @@
+## [1.2.4] - 2025-11-23
+
+### Added
+
+- **Re-open WebView Button**: New status bar button to re-open the WebView after closing it, while the server is still running
+- Button appears next to QR Code button when WebView mode is used
+- Buttons remain visible even after closing the WebView, allowing easy re-opening without restarting the server
+- Multi-language support for the new button (EN, FR, ES, DE)
+
+### Improved
+
+- **Better Button Visibility Logic**: QR Code and Re-open WebView buttons now stay visible when WebView is closed but server is still active
+- Buttons only hide when the server is actually stopped
+- Server state variables (URL, port, HTTPS) are preserved when WebView is closed
+
 ## [1.2.3] - 2025-11-14
 
 ### Added
