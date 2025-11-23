@@ -14,6 +14,7 @@ let webviewPanel: vscode.WebviewPanel | null = null;
 let currentWebviewReady: boolean = false;
 let statusButton: vscode.StatusBarItem;
 let qrButton: vscode.StatusBarItem;
+let reopenWebviewButton: vscode.StatusBarItem;
 let currentWebviewUrl: string | null = null;
 let currentWebviewPort: number | null = null;
 let currentWebviewIsHttps: boolean | null = null;
@@ -31,6 +32,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     instantPreviewTooltip: 'Show Instant Preview of current HTML file',
     qrCode: 'QR Code',
     qrCodeTooltip: 'Show QR Code for server access',
+    reopenWebview: 'Re-open WebView',
+    reopenWebviewTooltip: 'Re-open the WebView preview',
     scanToAccess: 'Scan to access server',
     qrNetworkOnly: 'Accessible only on your local network',
     noFolder: 'No folder is open in VS Code.',
@@ -70,6 +73,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     instantPreviewTooltip: "Afficher la prévisualisation du fichier HTML courant",
     qrCode: 'Code QR',
     qrCodeTooltip: "Afficher le code QR pour l'accès au serveur",
+    reopenWebview: 'Rouvrir WebView',
+    reopenWebviewTooltip: 'Rouvrir la prévisualisation WebView',
     scanToAccess: 'Scanner pour accéder au serveur',
     qrNetworkOnly: "Accessible uniquement sur votre réseau local",
     noFolder: "Aucun dossier n'est ouvert dans VS Code.",
@@ -109,6 +114,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     instantPreviewTooltip: 'Mostrar vista previa del archivo HTML actual',
     qrCode: 'Código QR',
     qrCodeTooltip: 'Mostrar código QR para acceso al servidor',
+    reopenWebview: 'Reabrir WebView',
+    reopenWebviewTooltip: 'Reabrir la vista previa de WebView',
     scanToAccess: 'Escanear para acceder al servidor',
     qrNetworkOnly: 'Accesible solo en su red local',
     noFolder: 'No hay ninguna carpeta abierta en VS Code.',
@@ -148,6 +155,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     instantPreviewTooltip: 'Sofortvorschau der aktuellen HTML-Datei anzeigen',
     qrCode: 'QR-Code',
     qrCodeTooltip: 'QR-Code für Serverzugriff anzeigen',
+    reopenWebview: 'WebView erneut öffnen',
+    reopenWebviewTooltip: 'WebView-Vorschau erneut öffnen',
     scanToAccess: 'Scannen, um auf den Server zuzugreifen',
     qrNetworkOnly: 'Nur im lokalen Netzwerk zugänglich',
     noFolder: 'Kein Ordner in VS Code geöffnet.',
@@ -267,6 +276,7 @@ export function activate(context: vscode.ExtensionContext) {
   statusButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   const instantPreviewButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
   qrButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
+  reopenWebviewButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 97);
 
   function getTranslation(key: string, fallback: string): string {
     const lang = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.language', 'en') || 'en';
@@ -293,6 +303,11 @@ export function activate(context: vscode.ExtensionContext) {
       qrButton.text = '$(qr-code) ' + getTranslation('qrCode', 'QR Code');
       qrButton.tooltip = getTranslation('qrCodeTooltip', 'Show QR Code for server access');
     } catch (e) { }
+    // Re-open WebView button translations
+    try {
+      reopenWebviewButton.text = '$(window) ' + getTranslation('reopenWebview', 'Re-open WebView');
+      reopenWebviewButton.tooltip = getTranslation('reopenWebviewTooltip', 'Re-open the WebView preview');
+    } catch (e) { }
   };
 
   applyTranslations();
@@ -311,6 +326,13 @@ export function activate(context: vscode.ExtensionContext) {
   qrButton.text = '$(qr-code) ' + getTranslation('qrCode', 'QR Code');
   qrButton.hide();
   context.subscriptions.push(qrButton);
+
+  // Re-open WebView button (hidden until a webview server preview is opened)
+  reopenWebviewButton.command = 'fast-http-server.reopenWebview';
+  reopenWebviewButton.tooltip = getTranslation('reopenWebviewTooltip', 'Re-open the WebView preview');
+  reopenWebviewButton.text = '$(window) ' + getTranslation('reopenWebview', 'Re-open WebView');
+  reopenWebviewButton.hide();
+  context.subscriptions.push(reopenWebviewButton);
 
   const instantPreviewCmd = vscode.commands.registerCommand('fast-http-server.instantPreview', async () => {
     const editor = vscode.window.activeTextEditor;
@@ -407,6 +429,64 @@ export function activate(context: vscode.ExtensionContext) {
     });
   });
   context.subscriptions.push(instantPreviewCmd);
+
+  // Command to re-open webview
+  const reopenWebviewCmd = vscode.commands.registerCommand('fast-http-server.reopenWebview', async () => {
+    if (!currentWebviewUrl || !currentWebviewPort || currentWebviewIsHttps === null) {
+      vscode.window.showInformationMessage(getTranslation('noEditor', 'No active editor'));
+      return;
+    }
+
+    // Close existing webview if any
+    if (webviewPanel) {
+      webviewPanel.dispose();
+      webviewPanel = null;
+    }
+
+    // Re-create the webview with the same parameters
+    const folder = lastServerParams?.folder || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+    webviewPanel = vscode.window.createWebviewPanel(
+      'fastHttpServer',
+      getTranslation('fastHttpServerTitle', 'Live Server SE'),
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [vscode.Uri.file(folder), vscode.Uri.file(context.extensionPath)]
+      }
+    );
+
+    try {
+      const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+      webviewPanel.iconPath = iconPath;
+    } catch (e) {
+    }
+
+    const loadingText = getTranslation('loading', 'Loading preview...');
+    const qrCodeText = getTranslation('qrCode', 'QR Code');
+    const qrCodeTooltip = getTranslation('qrCodeTooltip', 'Show QR Code for server access');
+    const scanToAccessText = getTranslation('scanToAccess', 'Scan to access server');
+    const qrNetworkOnlyText = getTranslation('qrNetworkOnly', 'Accessible only on your local network');
+    webviewPanel.webview.html = getWebviewContent(currentWebviewUrl, currentWebviewPort, loadingText, currentWebviewIsHttps, qrCodeText, qrCodeTooltip, scanToAccessText, qrNetworkOnlyText, currentDetectedIP);
+    
+    currentWebviewReady = false;
+    try {
+      webviewPanel.webview.onDidReceiveMessage(msg => {
+        try { console.log('Extension received message from webview:', msg); } catch (e) {}
+        if (msg && msg.type === 'webview-ready') {
+          currentWebviewReady = true;
+          try { console.log('Webview signalled ready'); } catch (e) {}
+        }
+      });
+    } catch (e) {}
+
+    webviewPanel.onDidDispose(() => {
+      webviewPanel = null;
+      // Ne pas réinitialiser les variables ni cacher les boutons
+      // car le serveur est toujours actif
+    });
+  });
+  context.subscriptions.push(reopenWebviewCmd);
 
   // Command to show QR in the currently opened webview
   const showQrCmd = vscode.commands.registerCommand('fast-http-server.showQr', async () => {
@@ -693,15 +773,14 @@ export function activate(context: vscode.ExtensionContext) {
               }
             });
           } catch (e) {}
-          // Show QR status button when server webview is open
+          // Show QR and Re-open WebView status buttons when server webview is open
           try { qrButton.show(); } catch (e) { }
+          try { reopenWebviewButton.show(); } catch (e) { }
 
           webviewPanel.onDidDispose(() => {
             webviewPanel = null;
-            currentWebviewUrl = null;
-            currentWebviewPort = null;
-            currentWebviewIsHttps = null;
-            try { qrButton.hide(); } catch (e) { }
+            // Ne pas réinitialiser les variables ni cacher les boutons
+            // car le serveur est toujours actif
           });
         }
   }, undefined, isHttps, certPathToUse, keyPathToUse);
@@ -715,6 +794,13 @@ export function activate(context: vscode.ExtensionContext) {
         webviewPanel.dispose();
         webviewPanel = null;
       }
+      // Cacher les boutons QR et Re-open WebView quand le serveur s'arrête
+      try { qrButton.hide(); } catch (e) { }
+      try { reopenWebviewButton.hide(); } catch (e) { }
+      // Réinitialiser les variables
+      currentWebviewUrl = null;
+      currentWebviewPort = null;
+      currentWebviewIsHttps = null;
       vscode.window.showInformationMessage(getTranslation('serverStopped', 'Server stopped.'));
       statusButton.text = getTranslation('start', '$(rocket) Start Live Server SE');
       statusButton.tooltip = getTranslation('startTooltip', 'Start Fast HTTP Server');
@@ -931,13 +1017,12 @@ export function activate(context: vscode.ExtensionContext) {
             });
           } catch (e) {}
           try { qrButton.show(); } catch (e) { }
+          try { reopenWebviewButton.show(); } catch (e) { }
 
           webviewPanel.onDidDispose(() => {
             webviewPanel = null;
-            currentWebviewUrl = null;
-            currentWebviewPort = null;
-            currentWebviewIsHttps = null;
-            try { qrButton.hide(); } catch (e) { }
+            // Ne pas réinitialiser les variables ni cacher les boutons
+            // car le serveur est toujours actif
           });
         }
   }, undefined, isHttps, undefined, undefined);
@@ -1149,13 +1234,12 @@ export function activate(context: vscode.ExtensionContext) {
           });
         } catch (e) {}
         try { qrButton.show(); } catch (e) { }
+        try { reopenWebviewButton.show(); } catch (e) { }
 
         webviewPanel.onDidDispose(() => {
           webviewPanel = null;
-          currentWebviewUrl = null;
-          currentWebviewPort = null;
-          currentWebviewIsHttps = null;
-          try { qrButton.hide(); } catch (e) { }
+          // Ne pas réinitialiser les variables ni cacher les boutons
+          // car le serveur est toujours actif
         });
       }
   }, undefined, useHttps, certPathToUse2, keyPathToUse2);
