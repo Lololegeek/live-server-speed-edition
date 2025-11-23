@@ -2,7 +2,8 @@
   "name": "live-server-speed-edition",
   "displayName": "Live Server Speed Edition",
   "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
-  "version": "1.2.3",
+  "version": "1.2.4",
+  "license": "MIT",
   "keywords": [
     "live server",
     "live preview",
