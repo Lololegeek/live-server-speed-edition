@@ -1,4 +1,4 @@
-# Improvements for Live Server Speed Edition 1.2.4
+# Improvements for Live Server Speed Edition 1.2.5
 
 ## Completed
 
