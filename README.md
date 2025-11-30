@@ -87,15 +87,15 @@ Experimental:
 
 ## 📸 Demo
 
-### 🚀 Launch Server
-Watch how quick and easy it is to start the live server:
-
-![Launch Server Demo](https://github.com/Lololegeek/live-server-speed-edition/raw/main/launchvideo.mp4)
+### 🎬 Setup & Configuration
+![Setup Demo](https://raw.githubusercontent.com/Lololegeek/live-server-speed-edition/main/setup.gif)
 
 ### 🔄 Live Reload in Action
-See the automatic reload when you save your files:
+![Live Reload Demo](https://raw.githubusercontent.com/Lololegeek/live-server-speed-edition/main/reload.gif)
 
-![Live Reload Demo](https://github.com/Lololegeek/live-server-speed-edition/raw/main/reload.mp4)
+### ⚡ Instant Reload Feature
+![Instant Reload Demo](https://raw.githubusercontent.com/Lololegeek/live-server-speed-edition/main/instantreload.gif)
+
 
 ---
 
