@@ -90,12 +90,12 @@ Experimental:
 ### 🚀 Launch Server
 Watch how quick and easy it is to start the live server:
 
-https://github.com/Lololegeek/live-server-speed-edition/raw/refs/heads/main/launchvideo.mp4
+![Launch Server Demo](https://github.com/Lololegeek/live-server-speed-edition/raw/main/launchvideo.mp4)
 
 ### 🔄 Live Reload in Action
 See the automatic reload when you save your files:
 
-https://github.com/Lololegeek/live-server-speed-edition/raw/refs/heads/main/reload.mp4
+![Live Reload Demo](https://github.com/Lololegeek/live-server-speed-edition/raw/main/reload.mp4)
 
 ---
 
