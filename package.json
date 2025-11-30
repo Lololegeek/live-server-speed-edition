@@ -1,9 +1,8 @@
 {
   "name": "live-server-speed-edition",
-  "displayName": "Live Server Speed Edition",
+  "displayName": "Live Server Speed Edition 🚀",
   "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
-  "version": "1.2.4",
-  "license": "MIT",
+  "version": "1.2.5",
   "keywords": [
     "live server",
     "live preview",
@@ -43,7 +42,10 @@
   ],
   "publisher": "Lololegeek",
   "icon": "icon.png",
-  "repository": "https://github.com/Lololegeek/live-server-speed-edition",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lololegeek/live-server-speed-edition"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -112,27 +114,6 @@
           "type": "boolean",
           "default": false,
           "description": "%liveServerSpeed.openKeybindings.description%"
-        },
-        "liveServerSpeed.defaultIP": {
-          "type": "string",
-          "default": "",
-          "description": "%liveServerSpeed.defaultIP.description%"
-        }
-        ,
-        "liveServerSpeed.httpsCertPath": {
-          "type": "string",
-          "default": "",
-          "description": "%liveServerSpeed.httpsCertPath.description%"
-        },
-        "liveServerSpeed.httpsKeyPath": {
-          "type": "string",
-          "default": "",
-          "description": "%liveServerSpeed.httpsKeyPath.description%"
-        },
-        "liveServerSpeed.httpsAutoGenerate": {
-          "type": "boolean",
-          "default": true,
-          "description": "%liveServerSpeed.httpsAutoGenerate.description%"
         }
       }
     }
