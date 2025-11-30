@@ -10,18 +10,5 @@
 - [x] Improve webview reload reliability
 - [x] Optimize the code for Live Server reload in 1 Sec
 - [x] Key for start server
-- [x] Add QR Code button in webview for easy server access
-- [x] Network accessibility (allow access from other devices on the same network)
-
-## Potential Future Improvements
-
-- Add HTTPS support with certificates
-- More languages
-- CLI (CMD command) (EXE App)
-
-## Fixed Issues
-
-- [x] Fixed server start issues where browser/webview wouldn't open due to hardcoded English strings in choice comparisons
-- [x] Implemented proper webview creation for server mode with iframe loading the server URL
-- [x] Ensured server stops correctly and webview disposes properly
-- [x] Prevented multiple server instances by properly managing stopServer function
+- [x] QR Code button
+- [x] Back button in server configuration
