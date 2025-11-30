@@ -1,3 +1,14 @@
+## [1.2.5] - 2025-11-30
+
+### Added
+
+- Back button in server configuration 
+- Update README.md
+
+### Fixed
+
+- Fixed the issue : the server not launch
+
 ## [1.2.4] - 2025-11-23
 
 ### Added
