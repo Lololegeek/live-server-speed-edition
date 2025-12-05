@@ -1,8 +1,8 @@
 {
   "name": "live-server-speed-edition",
-  "displayName": "Live Server Speed Edition 🚀",
+  "displayName": "Live Server Speed Edition",
   "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "keywords": [
     "live server",
     "live preview",
@@ -38,7 +38,8 @@
     "Live Server",
     "fast",
     "productivity",
-    "developer tools"
+    "developer tools",
+    "Christmas"
   ],
   "publisher": "Lololegeek",
   "icon": "icon.png",
