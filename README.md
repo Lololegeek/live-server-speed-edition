@@ -1,6 +1,5 @@
 # 🚀 Live Server Speed Edition
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/Lololegeek.live-server-speed-edition?label=Marketplace&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
 [![Installs](https://img.shields.io/visual-studio-marketplace/i/Lololegeek.live-server-speed-edition?label=Installs)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
 [![Rating](https://img.shields.io/visual-studio-marketplace/r/Lololegeek.live-server-speed-edition?label=Rating)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
 [![License](https://img.shields.io/github/license/Lololegeek/live-server-speed-edition)](LICENSE)
@@ -9,6 +8,9 @@
 A blazing-fast local HTTP server with live reload — built right into VS Code.
 
 ---
+
+### 🔄 Live Reload in Action
+![Live Reload Demo](https://raw.githubusercontent.com/Lololegeek/live-server-speed-edition/main/reload.gif)
 
 ## ⚡ Features
 
