@@ -46,7 +46,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     languageDescription: 'Language used by the extension (en, fr, es, de)',
     debounceTimeDescription: 'Debounce time in milliseconds for file change detection and instant preview updates (50-1000ms)',
     relaunchShortcutDescription: 'Default keyboard shortcut for relaunching the server with last parameters (user can override in keybindings.json)',
-    openKeybindingsDescription: 'Open Keyboard Shortcuts for Live Server Speed Edition (set to true to open)'
+    openKeybindingsDescription: 'Open Keyboard Shortcuts for Live Server Speed Edition (set to true to open)',
+    christmasMessage: '🎄 Merry Christmas! 🎅'
   },
   fr: {
     start: '$(rocket) Démarrer Live Server SE',
@@ -80,7 +81,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     languageDescription: "Langue utilisée par l'extension (en, fr, es, de)",
     debounceTimeDescription: "Temps de debounce en millisecondes pour la détection des changements de fichiers et les mises à jour de prévisualisation instantanée (50-1000ms)",
     relaunchShortcutDescription: "Raccourci clavier par défaut pour relancer le serveur avec les derniers paramètres (l'utilisateur peut le remplacer dans keybindings.json)",
-    openKeybindingsDescription: "Ouvrir les Raccourcis Clavier pour Live Server Speed Edition (mettre à true pour ouvrir)"
+    openKeybindingsDescription: "Ouvrir les Raccourcis Clavier pour Live Server Speed Edition (mettre à true pour ouvrir)",
+    christmasMessage: '🎄 Joyeux Noël ! 🎅'
   },
   es: {
     start: '$(rocket) Iniciar Live Server SE',
@@ -114,7 +116,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     languageDescription: 'Idioma utilizado por la extensión (en, fr, es, de)',
     debounceTimeDescription: 'Tiempo de debounce en milisegundos para la detección de cambios de archivos y actualizaciones de vista previa instantánea (50-1000ms)',
     relaunchShortcutDescription: 'Atajo de teclado predeterminado para relanzar el servidor con los últimos parámetros (el usuario puede anularlo en keybindings.json)',
-    openKeybindingsDescription: 'Abrir Atajos de Teclado para Live Server Speed Edition (establecer en true para abrir)'
+    openKeybindingsDescription: 'Abrir Atajos de Teclado para Live Server Speed Edition (establecer en true para abrir)',
+    christmasMessage: '🎄 ¡Feliz Navidad! 🎅'
   },
   de: {
     start: '$(rocket) Live Server SE starten',
@@ -148,9 +151,18 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     languageDescription: 'Sprache, die von der Erweiterung verwendet wird (en, fr, es, de)',
     debounceTimeDescription: 'Debounce-Zeit in Millisekunden für die Dateiänderungserkennung und sofortige Vorschau-Updates (50-1000ms)',
     relaunchShortcutDescription: 'Standard-Tastenkürzel zum Neustarten des Servers mit den letzten Parametern (Benutzer kann es in keybindings.json überschreiben)',
-    openKeybindingsDescription: 'Tastenkürzel für Live Server Speed Edition öffnen (auf true setzen, um zu öffnen)'
+    openKeybindingsDescription: 'Tastenkürzel für Live Server Speed Edition öffnen (auf true setzen, um zu öffnen)',
+    christmasMessage: '🎄 Frohe Weihnachten! 🎅'
   }
 };
+
+// Function to check if it's Christmas (December 24th or 25th)
+function isChristmas(): boolean {
+  const now = new Date();
+  const month = now.getMonth(); // 0-indexed, so December is 11
+  const day = now.getDate();
+  return month === 11 && (day === 24 || day === 25);
+}
 
 // Function to check if port is available
 function isPortAvailable(port: number): Promise<boolean> {
@@ -598,6 +610,12 @@ export function activate(context: vscode.ExtensionContext) {
 
       stopServer = startServer(folder, port, async (serverUrl) => {
         const fullUrl = `${serverUrl}/${selectedFile}`;
+
+        // Check if it's Christmas and show notification
+        if (isChristmas()) {
+          vscode.window.showInformationMessage(getTranslation('christmasMessage', '🎄 Merry Christmas! 🎅'));
+        }
+
         if (choice === getTranslation('openDefault', 'Open in default browser')) {
           open(fullUrl);
         } else if (choice === getTranslation('openWebview', 'Open in VS Code WebView (Beta)')) {
@@ -849,6 +867,11 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       stopServer = startServer(folder, port, async (serverUrl) => {
+        // Check if it's Christmas and show notification
+        if (isChristmas()) {
+          vscode.window.showInformationMessage(getTranslation('christmasMessage', '🎄 Merry Christmas! 🎅'));
+        }
+
         if (choice === choiceBrowser) {
           open(serverUrl);
         } else if (choice === choiceWebview) {
@@ -1029,6 +1052,11 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     stopServer = startServer(folder, port, async (serverUrl) => {
+      // Check if it's Christmas and show notification
+      if (isChristmas()) {
+        vscode.window.showInformationMessage(getTranslation('christmasMessage', '🎄 Merry Christmas! 🎅'));
+      }
+
       if (choice === choiceBrowser) {
         open(serverUrl);
       } else if (choice === choiceWebview) {
