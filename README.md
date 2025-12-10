@@ -22,7 +22,7 @@ A blazing-fast local HTTP server with live reload — built right into VS Code.
   - 🧩 View directly inside VS Code via WebView  
   - ⚡ Instant Preview (without server)  
 - **Protocol support**: HTTP and HTTPS (with self-signed certificates support)  
-- **HTTPS in WebView**: Full HTTPS support in VS Code WebView with auto-reconnect on connection loss  
+- **HTTPS in WebView**: No HTTPS support in VS Code WebView (no certificats)
 - **Zero configuration** — just open a folder and go  
 - **Default port**: 5500  
 - **Network accessible**: Access your server from other devices on the same network (e.g., mobile testing) using your local IP address  
@@ -51,7 +51,7 @@ Example in French:
 2. (Optional) Set your language: Go to Settings > liveServerSpeed.language  
 3. Click **Start Live Server SE** in the status bar  
 4. Choose your preferred view (browser or WebView)  
-5. Edit your files — the page reloads automatically after one second 💨  
+5. Edit your files — the page reloads automatically after one second 💨
 6. (Optional) Configure a keyboard shortcut to restart the server instantly  
 
 ---
@@ -81,6 +81,7 @@ code --install-extension Lololegeek.live-server-speed-edition
 Because traditional live servers can be slow or bloated.  
 This edition focuses on **speed, simplicity, native integration, and multi-language support**.  
 No config files. No clutter. Just fast results.  
+This Live Server is faster and less bloated than traditional live servers. (Five Server, Live Server and more...)
 
 Experimental:  
 - HTTPS support  
@@ -105,6 +106,8 @@ Experimental:
 
 Created with ❤️ by **Lololegeek**  
 Want to contribute or suggest a feature? `https://github.com/Lololegeek/live-server-speed-edition/issues` or submit a PR!  
+Thank you !
+I'm a passioned développer, i'm the founder of ByteCode-Team, the fonder of ByteCode IDE, Todo In VS Code, Python HTTP Server and more... View other projects in my GitHub : https://github.com/Lololegeek
 
 
 
