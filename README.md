@@ -1,4 +1,6 @@
-# 🚀 Live Server Speed Edition
+# 🚀 Live Server Speed Edition 
+
+Version : 1.2.7
 
 [![Installs](https://img.shields.io/visual-studio-marketplace/i/Lololegeek.live-server-speed-edition?label=Installs)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
 [![Rating](https://img.shields.io/visual-studio-marketplace/r/Lololegeek.live-server-speed-edition?label=Rating)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
