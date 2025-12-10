@@ -1,4 +1,4 @@
-# Improvements for Live Server Speed Edition 1.2.5
+# Improvements for Live Server Speed Edition 1.2.7
 
 ## Completed
 
@@ -12,3 +12,11 @@
 - [x] Key for start server
 - [x] QR Code button
 - [x] Back button in server configuration
+- [x] Christmas easter egg
+
+## Future
+
+- [ ] CLI
+- [ ] Logs
+- [ ] Update back button
+
