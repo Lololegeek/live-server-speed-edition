@@ -1,3 +1,24 @@
+## [1.2.8] - 2025-12-26
+
+## Fixed
+
+- Fixed the changelog 
+
+
+
+## [1.2.7] - 2025-12-26
+
+### Added
+
+- Notification for 2026
+
+## Fixed
+
+- Come to 1.2.4 because QR Code and ReOpen WebView code as dissapear and remake the back button
+
+
+=======
+
 ## [1.2.6] - 2025-12-03
 
 ### Added
