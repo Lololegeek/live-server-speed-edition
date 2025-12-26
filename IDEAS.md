@@ -9,3 +9,4 @@ My Ideas :
 - Optimise the code
 - Lite edition (The best speed edition, just start button)
 - Google Chrome, Edge, Opera and more navigators extension : Stop Live Server change the settings, the debounce settings, share the errors for a future fonction (logs) 👀, change the code and more...
+- React, Vue and Angular support
