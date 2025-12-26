@@ -15,18 +15,30 @@ export function startServer(
   port: number,
   onReady: (url: string) => void,
   debounceTime: number = 5,
-  useHttps: boolean = false
+  useHttps: boolean = false,
+  certPath?: string,
+  keyPath?: string
 ) {
   const app = express();
   let server: http.Server | https.Server;
 
   if (useHttps) {
-    const attrs = [{ name: 'commonName', value: 'localhost' }];
-    const pems = selfsigned.generate(attrs, { days: 365 });
-    const options = {
-      key: pems.private,
-      cert: pems.cert
-    };
+    let options;
+    if (certPath && keyPath) {
+      // Use custom certificates if provided
+      options = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+      };
+    } else {
+      // Generate self-signed certificate
+      const attrs = [{ name: 'commonName', value: 'localhost' }];
+      const pems = selfsigned.generate(attrs, { days: 365 });
+      options = {
+        key: pems.private,
+        cert: pems.cert
+      };
+    }
     server = https.createServer(options, app);
   } else {
     server = http.createServer(app);
