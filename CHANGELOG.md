@@ -1,4 +1,19 @@
 
+## [1.2.9] - 2026-02-03
+
+### Added
+
+- **Context menu for HTML files**: Right-click on any `.html` file in the Explorer to access two new options:
+  - **"Open with Live Server (Last Parameters)"**: Opens the selected HTML file using the same port, protocol, and preview mode as your last server launch. Perfect for quickly switching between different HTML files without reconfiguring.
+  - **"Open with Live Server (Choose Parameters...)"**: Opens the selected HTML file with a fresh configuration wizard where you can choose the port, protocol (HTTP/HTTPS), and preview mode (Instant Preview, Browser, or WebView).
+- Multi-language support for the new context menu items (English, French, Spanish, German).
+- Smart validation ensures the selected file is within the current workspace before launching.
+
+### Improved
+
+- Streamlined workflow for developers working with multiple HTML files in the same project.
+- Maintains all existing features (QR Code, WebView re-opening, live reload) when using the context menu options.
+
 ## [1.2.8] - 2025-12-26
 
 ### Fixed
