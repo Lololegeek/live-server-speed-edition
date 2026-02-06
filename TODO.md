@@ -1,6 +1,11 @@
-# Improvements for Live Server Speed Edition 1.2.7
+# Improvements for Live Server Speed Edition
 
-## Completed
+## Completed in 1.2.9
+
+- [x] Context menu for HTML files with two options (Last Parameters / Choose Parameters)
+- [x] Multi-language support for context menu items
+
+## Completed in 1.2.7
 
 - [x] Multi-language UI (en, fr, es, de)
 - [x] Language setting applies instantly (no restart needed)
@@ -16,7 +21,11 @@
 
 ## Future
 
-- [ ] CLI
-- [ ] Logs
-- [ ] Update back button
-
+- [ ] CLI mode
+- [ ] Server logs panel
+- [ ] Update back button functionality
+- [ ] Custom CSS/JS injection
+- [ ] Multiple server instances support
+- [ ] Proxy configuration
+- [ ] Custom response headers
+- [ ] Server-side rendering support
