@@ -75,7 +75,11 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     relaunchShortcutDescription: 'Default keyboard shortcut for relaunching the server with last parameters (user can override in keybindings.json)',
     openKeybindingsDescription: 'Open Keyboard Shortcuts for Live Server Speed Edition (set to true to open)',
     defaultIPDescription: 'Default IP address for the server (leave empty to auto-detect)',
-    christmasMessage: '🎄 Merry Christmas! 🎅'
+    christmasMessage: '🎄 Merry Christmas! 🎅',
+    openWithLastParams: 'Open with Live Server SE (Last Parameters)',
+    openWithNewParams: 'Open with Live Server SE (Choose Parameters...)',
+    noLastParams: 'No previous server parameters found. Please run the server at least once.',
+    fileNotInWorkspace: 'The selected file is not in the current workspace.'
   },
   fr: {
     start: '$(rocket) Démarrer Live Server SE',
@@ -119,7 +123,11 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     relaunchShortcutDescription: "Raccourci clavier par défaut pour relancer le serveur avec les derniers paramètres (l'utilisateur peut le remplacer dans keybindings.json)",
     openKeybindingsDescription: "Ouvrir les Raccourcis Clavier pour Live Server Speed Edition (mettre à true pour ouvrir)",
     defaultIPDescription: "Adresse IP par défaut pour le serveur (laisser vide pour auto-détection)",
-    christmasMessage: '🎄 Joyeux Noël ! 🎅'
+    christmasMessage: '🎄 Joyeux Noël ! 🎅',
+    openWithLastParams: 'Ouvrir avec Live Server SE (Derniers paramètres)',
+    openWithNewParams: 'Ouvrir avec Live Server SE (Choisir les paramètres...)',
+    noLastParams: 'Aucun paramètre de serveur précédent trouvé. Veuillez lancer le serveur au moins une fois.',
+    fileNotInWorkspace: 'Le fichier sélectionné n\'est pas dans l\'espace de travail actuel.'
 
   },
   es: {
@@ -163,7 +171,11 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     debounceTimeDescription: 'Tiempo de debounce en milisegundos para la detección de cambios de archivos y actualizaciones de vista previa instantánea (50-1000ms)',
     relaunchShortcutDescription: 'Atajo de teclado predeterminado para relanzar el servidor con los últimos parámetros (el usuario puede anularlo en keybindings.json)',
     openKeybindingsDescription: 'Abrir Atajos de Teclado para Live Server Speed Edition (establecer en true para abrir)',
-    christmasMessage: '🎄 ¡Feliz Navidad! 🎅'
+    christmasMessage: '🎄 ¡Feliz Navidad! 🎅',
+    openWithLastParams: 'Abrir con Live Server SE (Últimos parámetros)',
+    openWithNewParams: 'Abrir con Live Server SE (Elegir parámetros...)',
+    noLastParams: 'No se encontraron parámetros de servidor anteriores. Por favor, ejecute el servidor al menos una vez.',
+    fileNotInWorkspace: 'El archivo seleccionado no está en el espacio de trabajo actual.'
   },
   de: {
     start: '$(rocket) Live Server SE starten',
@@ -206,7 +218,11 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     debounceTimeDescription: 'Debounce-Zeit in Millisekunden für die Dateiänderungserkennung und sofortige Vorschau-Updates (50-1000ms)',
     relaunchShortcutDescription: 'Standard-Tastenkürzel zum Neustarten des Servers mit den letzten Parametern (Benutzer kann es in keybindings.json überschreiben)',
     openKeybindingsDescription: 'Tastenkürzel für Live Server Speed Edition öffnen (auf true setzen, um zu öffnen)',
-    christmasMessage: '🎄 Frohe Weihnachten! 🎅'
+    christmasMessage: '🎄 Frohe Weihnachten! 🎅',
+    openWithLastParams: 'Mit Live Server SE öffnen (Letzte Parameter)',
+    openWithNewParams: 'Mit Live Server SE öffnen (Parameter wählen...)',
+    noLastParams: 'Keine vorherigen Serverparameter gefunden. Bitte führen Sie den Server mindestens einmal aus.',
+    fileNotInWorkspace: 'Die ausgewählte Datei befindet sich nicht im aktuellen Arbeitsbereich.'
   }
 };
 
@@ -1452,6 +1468,456 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(openKeybindingsCmd);
+
+  // Command to open HTML file with last used parameters
+  const openHtmlWithLastParamsCmd = vscode.commands.registerCommand('fast-http-server.openHtmlWithLastParams', async (clickedFile: vscode.Uri) => {
+    const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!folder) {
+      vscode.window.showErrorMessage(getTranslation('noFolder', 'No folder is open in VS Code.'));
+      return;
+    }
+
+    // Check if the clicked file is in the workspace
+    const filePath = clickedFile.fsPath;
+    if (!filePath.startsWith(folder)) {
+      vscode.window.showErrorMessage(getTranslation('fileNotInWorkspace', 'The selected file is not in the current workspace.'));
+      return;
+    }
+
+    // Get the relative path of the selected file
+    const selectedFile = vscode.workspace.asRelativePath(clickedFile);
+
+    if (!lastServerParams) {
+      vscode.window.showWarningMessage(getTranslation('noLastParams', 'No previous server parameters found. Please run the server at least once.'));
+      return;
+    }
+
+    // Use last parameters but with the selected file
+    const { port, useHttps, choice } = lastServerParams;
+
+    const available = await isPortAvailable(port);
+    if (!available) {
+      vscode.window.showErrorMessage(`Port ${port} is already in use.`);
+      return;
+    }
+
+    const choicePreview = getTranslation('previewInstant', 'Preview without server (Instant)');
+    const choiceBrowser = getTranslation('openDefault', 'Open in default browser');
+    const choiceWebview = getTranslation('openWebview', 'Open in VS Code WebView (Beta)');
+
+    if (choice === choicePreview) {
+      const documentDir = path.dirname(filePath);
+
+      const previewPanel = vscode.window.createWebviewPanel(
+        'instantPreview',
+        getTranslation('instantPreviewTitle', 'Instant Preview'),
+        vscode.ViewColumn.Two,
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true,
+          localResourceRoots: [vscode.Uri.file(documentDir)],
+          enableFindWidget: true
+        }
+      );
+
+      const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+      previewPanel.iconPath = iconPath;
+
+      const getWebviewUri = (relativePath: string) => {
+        const absolutePath = path.join(documentDir, relativePath);
+        return 'vscode-resource:' + absolutePath;
+      };
+
+      const updateContent = (content: string) => {
+        const { css: cssInjections, js: scriptInjections, processed: processedContent } = extractCssAndJsFromHtml(content, documentDir);
+
+        const imagePath = processedContent.replace(
+          /<img[^>]*src=["']([^"']+)["'][^>]*>/g,
+          (match, src) => {
+            if (src.startsWith('http')) return match;
+            return match.replace(src, getWebviewUri(src));
+          }
+        );
+
+        previewPanel.webview.html = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { margin: 0; padding: 20px; }
+            </style>
+            ${[...cssInjections].map(css => `<style>${css}</style>`).join('\n')}
+          </head>
+          <body>
+            ${imagePath}
+            ${[...scriptInjections].map(js => `<script>${js}</script>`).join('\n')}
+          </body>
+          </html>
+        `;
+      };
+
+      let updateTimeout: NodeJS.Timeout | null = null;
+      const debounceUpdate = (content: string) => {
+        if (updateTimeout) clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => {
+          updateContent(content);
+        }, getDebounceTime());
+      };
+
+      // Read and display the file content
+      try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        updateContent(content);
+      } catch (e) {
+        vscode.window.showErrorMessage('Failed to read the HTML file.');
+        return;
+      }
+
+      // Watch for file changes
+      const watcher = chokidar.watch(filePath, { persistent: true });
+      watcher.on('change', () => {
+        try {
+          const content = fs.readFileSync(filePath, 'utf8');
+          debounceUpdate(content);
+        } catch (e) {
+          console.error('Failed to reload file:', e);
+        }
+      });
+
+      previewPanel.onDidDispose(() => {
+        watcher.close();
+      });
+
+      return;
+    }
+
+    stopServer = startServer(folder, port, async (serverUrl) => {
+      if (isChristmas()) {
+        vscode.window.showInformationMessage(getTranslation('christmasMessage', '🎄 Merry Christmas! 🎅'));
+      }
+
+      if (choice === choiceBrowser) {
+        open(`${serverUrl}/${selectedFile}`);
+      } else if (choice === choiceWebview) {
+        webviewPanel = vscode.window.createWebviewPanel(
+          'fastHttpServer',
+          getTranslation('fastHttpServerTitle', 'Fast HTTP Server'),
+          vscode.ViewColumn.One,
+          {
+            enableScripts: true,
+            retainContextWhenHidden: true,
+            localResourceRoots: [vscode.Uri.file(folder), vscode.Uri.file(context.extensionPath)]
+          }
+        );
+
+        try {
+          const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+          webviewPanel.iconPath = iconPath;
+        } catch (e) {
+        }
+
+        currentWebviewUrl = `${serverUrl}/${selectedFile}`;
+        currentDetectedIP = detectNetworkIP();
+        currentWebviewPort = port;
+        currentWebviewIsHttps = useHttps;
+        const loadingText = getTranslation('loading', 'Loading preview...');
+        const qrCodeText = getTranslation('qrCode', 'QR Code');
+        const qrCodeTooltip = getTranslation('qrCodeTooltip', 'Show QR Code for server access');
+        const scanToAccessText = getTranslation('scanToAccess', 'Scan to access server');
+        const qrNetworkOnlyText = getTranslation('qrNetworkOnly', 'Accessible only on your local network');
+        webviewPanel.webview.html = getWebviewContent(currentWebviewUrl, port, loadingText, useHttps, qrCodeText, qrCodeTooltip, scanToAccessText, qrNetworkOnlyText, currentDetectedIP);
+        currentWebviewReady = false;
+        try {
+          webviewPanel.webview.onDidReceiveMessage(msg => {
+            try { console.log('Extension received message from webview:', msg); } catch (e) {}
+            if (msg && msg.type === 'webview-ready') {
+              currentWebviewReady = true;
+              try { console.log('Webview signalled ready'); } catch (e) {}
+            }
+          });
+        } catch (e) {}
+        try { qrButton.show(); } catch (e) { }
+        try { reopenWebviewButton.show(); } catch (e) { }
+
+        webviewPanel.onDidDispose(() => {
+          webviewPanel = null;
+        });
+      }
+    }, undefined, useHttps, undefined, undefined);
+
+    statusButton.text = getTranslation('stop', '$(debug-disconnect) Stop Live Server SE');
+    statusButton.tooltip = getTranslation('stopTooltip', 'Stop Fast HTTP Server');
+  });
+
+  context.subscriptions.push(openHtmlWithLastParamsCmd);
+
+  // Command to open HTML file with new parameter selection
+  const openHtmlWithNewParamsCmd = vscode.commands.registerCommand('fast-http-server.openHtmlWithNewParams', async (clickedFile: vscode.Uri) => {
+    const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!folder) {
+      vscode.window.showErrorMessage(getTranslation('noFolder', 'No folder is open in VS Code.'));
+      return;
+    }
+
+    // Check if the clicked file is in the workspace
+    const filePath = clickedFile.fsPath;
+    if (!filePath.startsWith(folder)) {
+      vscode.window.showErrorMessage(getTranslation('fileNotInWorkspace', 'The selected file is not in the current workspace.'));
+      return;
+    }
+
+    // Get the relative path of the selected file
+    const selectedFile = vscode.workspace.asRelativePath(clickedFile);
+
+    // Run server setup but skip the file selection step
+    let portInput: string | undefined;
+    let port: number | undefined;
+    let isHttps: boolean | undefined;
+    let choice: string | undefined;
+
+    type Step = 'port' | 'protocol' | 'preview';
+    let step: Step = 'port';
+
+    while (true) {
+      if (step === 'port') {
+        portInput = await vscode.window.showInputBox({
+          prompt: getTranslation('enterPort', 'Enter the port number for the server'),
+          value: lastServerParams?.port?.toString() || '5500',
+          validateInput: (value) => /^\d+$/.test(value) ? null : getTranslation('invalidPort', 'Please enter a valid port number')
+        });
+
+        if (!portInput) {
+          return null;
+        }
+        port = parseInt(portInput, 10);
+
+        const available = await isPortAvailable(port);
+        if (!available) {
+          const tryLabel = getTranslation('tryAnotherPort', 'Try Another Port');
+          const cancelLabel = getTranslation('cancel', 'Cancel');
+          const portMsgTemplate = getTranslation('portInUse', `Port {port} is already in use. Choose another port?`);
+          const portMsg = portMsgTemplate.replace('{port}', String(port));
+          const tryAgain = await vscode.window.showErrorMessage(
+            portMsg,
+            tryLabel,
+            cancelLabel
+          );
+          if (tryAgain === tryLabel) {
+            continue;
+          }
+          return null;
+        }
+
+        step = 'protocol';
+        continue;
+      }
+
+      if (step === 'protocol') {
+        const shortNote = getTranslation('webviewNotSupportedShort', "(WebView won't work)");
+        const protocolChoices: vscode.QuickPickItem[] = [
+          { label: 'HTTP' },
+          { label: 'HTTPS', description: shortNote }
+        ];
+        const pickedProtocol = await vscode.window.showQuickPick(protocolChoices, {
+          placeHolder: getTranslation('chooseProtocol', 'Choose protocol (HTTPS requires accepting self-signed certificate)')
+        });
+
+        if (!pickedProtocol) {
+          return null;
+        }
+
+        isHttps = pickedProtocol.label === 'HTTPS';
+
+        if (isHttps) {
+          vscode.window.showWarningMessage(getTranslation('httpsNotSupportedWebview', 'HTTPS in VS Code WebView may show security warnings due to self-signed certificates. For best experience, use HTTP or open in your default browser.'));
+        }
+
+        step = 'preview';
+        continue;
+      }
+
+      if (step === 'preview') {
+        const choicePreview = getTranslation('previewInstant', 'Preview without server (Instant)');
+        const choiceBrowser = getTranslation('openDefault', 'Open in default browser');
+        const choiceWebview = getTranslation('openWebview', 'Open in VS Code WebView (Beta)');
+
+        let choices: vscode.QuickPickItem[] = [
+          { label: choicePreview },
+          { label: choiceBrowser }
+        ];
+        if (!isHttps) {
+          choices = [...choices, { label: choiceWebview }];
+        }
+
+        const pickedChoice = await vscode.window.showQuickPick(choices, {
+          placeHolder: getTranslation('howPreview', 'How do you want to preview?')
+        });
+
+        if (!pickedChoice) {
+          return null;
+        }
+
+        choice = pickedChoice.label;
+
+        if (!port || typeof isHttps !== 'boolean') {
+          return null;
+        }
+
+        // Store last parameters
+        lastServerParams = { folder, port, selectedFile, useHttps: isHttps, choice: choice || '' };
+
+        // Now launch with these parameters
+        if (choice === choicePreview) {
+          const documentDir = path.dirname(filePath);
+
+          const previewPanel = vscode.window.createWebviewPanel(
+            'instantPreview',
+            getTranslation('instantPreviewTitle', 'Instant Preview'),
+            vscode.ViewColumn.Two,
+            {
+              enableScripts: true,
+              retainContextWhenHidden: true,
+              localResourceRoots: [vscode.Uri.file(documentDir)],
+              enableFindWidget: true
+            }
+          );
+
+          const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+          previewPanel.iconPath = iconPath;
+
+          const getWebviewUri = (relativePath: string) => {
+            const absolutePath = path.join(documentDir, relativePath);
+            return 'vscode-resource:' + absolutePath;
+          };
+
+          const updateContent = (content: string) => {
+            const { css: cssInjections, js: scriptInjections, processed: processedContent } = extractCssAndJsFromHtml(content, documentDir);
+
+            const imagePath = processedContent.replace(
+              /<img[^>]*src=["']([^"']+)["'][^>]*>/g,
+              (match, src) => {
+                if (src.startsWith('http')) return match;
+                return match.replace(src, getWebviewUri(src));
+              }
+            );
+
+            previewPanel.webview.html = `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                  body { margin: 0; padding: 20px; }
+                </style>
+                ${[...cssInjections].map(css => `<style>${css}</style>`).join('\n')}
+              </head>
+              <body>
+                ${imagePath}
+                ${[...scriptInjections].map(js => `<script>${js}</script>`).join('\n')}
+              </body>
+              </html>
+            `;
+          };
+
+          let updateTimeout: NodeJS.Timeout | null = null;
+          const debounceUpdate = (content: string) => {
+            if (updateTimeout) clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+              updateContent(content);
+            }, getDebounceTime());
+          };
+
+          try {
+            const content = fs.readFileSync(filePath, 'utf8');
+            updateContent(content);
+          } catch (e) {
+            vscode.window.showErrorMessage('Failed to read the HTML file.');
+            return;
+          }
+
+          const watcher = chokidar.watch(filePath, { persistent: true });
+          watcher.on('change', () => {
+            try {
+              const content = fs.readFileSync(filePath, 'utf8');
+              debounceUpdate(content);
+            } catch (e) {
+              console.error('Failed to reload file:', e);
+            }
+          });
+
+          previewPanel.onDidDispose(() => {
+            watcher.close();
+          });
+
+          return;
+        }
+
+        stopServer = startServer(folder, port, async (serverUrl) => {
+          if (isChristmas()) {
+            vscode.window.showInformationMessage(getTranslation('christmasMessage', '🎄 Merry Christmas! 🎅'));
+          }
+
+          if (choice === choiceBrowser) {
+            open(`${serverUrl}/${selectedFile}`);
+          } else if (choice === choiceWebview) {
+            webviewPanel = vscode.window.createWebviewPanel(
+              'fastHttpServer',
+              getTranslation('fastHttpServerTitle', 'Fast HTTP Server'),
+              vscode.ViewColumn.One,
+              {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+                localResourceRoots: [vscode.Uri.file(folder), vscode.Uri.file(context.extensionPath)]
+              }
+            );
+
+            try {
+              const iconPath = vscode.Uri.file(path.join(context.extensionPath, 'icon.png'));
+              webviewPanel.iconPath = iconPath;
+            } catch (e) {
+            }
+
+            currentWebviewUrl = `${serverUrl}/${selectedFile}`;
+            currentDetectedIP = detectNetworkIP();
+            currentWebviewPort = port!;
+            currentWebviewIsHttps = isHttps!;
+            const loadingText = getTranslation('loading', 'Loading preview...');
+            const qrCodeText = getTranslation('qrCode', 'QR Code');
+            const qrCodeTooltip = getTranslation('qrCodeTooltip', 'Show QR Code for server access');
+            const scanToAccessText = getTranslation('scanToAccess', 'Scan to access server');
+            const qrNetworkOnlyText = getTranslation('qrNetworkOnly', 'Accessible only on your local network');
+            webviewPanel.webview.html = getWebviewContent(currentWebviewUrl, port!, loadingText, isHttps!, qrCodeText, qrCodeTooltip, scanToAccessText, qrNetworkOnlyText, currentDetectedIP);
+            currentWebviewReady = false;
+            try {
+              webviewPanel.webview.onDidReceiveMessage(msg => {
+                try { console.log('Extension received message from webview:', msg); } catch (e) {}
+                if (msg && msg.type === 'webview-ready') {
+                  currentWebviewReady = true;
+                  try { console.log('Webview signalled ready'); } catch (e) {}
+                }
+              });
+            } catch (e) {}
+            try { qrButton.show(); } catch (e) { }
+            try { reopenWebviewButton.show(); } catch (e) { }
+
+            webviewPanel.onDidDispose(() => {
+              webviewPanel = null;
+            });
+          }
+        }, undefined, isHttps, undefined, undefined);
+
+        statusButton.text = getTranslation('stop', '$(debug-disconnect) Stop Live Server SE');
+        statusButton.tooltip = getTranslation('stopTooltip', 'Stop Fast HTTP Server');
+
+        return;
+      }
+    }
+  });
+
+  context.subscriptions.push(openHtmlWithNewParamsCmd);
 
   const configChangeDisposable = vscode.workspace.onDidChangeConfiguration(e => {
     if (e.affectsConfiguration('liveServerSpeed.language')) {
