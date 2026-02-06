@@ -1,6 +1,6 @@
 # 🚀 Live Server Speed Edition 
 
-Version : 1.2.8
+Version : 1.2.9
 
 [![Installs](https://img.shields.io/visual-studio-marketplace/i/Lololegeek.live-server-speed-edition?label=Installs)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
 [![Rating](https://img.shields.io/visual-studio-marketplace/r/Lololegeek.live-server-speed-edition?label=Rating)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
@@ -23,13 +23,14 @@ A blazing-fast local HTTP server with live reload — built right into VS Code.
   - 🌐 Open in default browser  
   - 🧩 View directly inside VS Code via WebView  
   - ⚡ Instant Preview (without server)  
+- **Context menu integration**: Right-click any `.html` file to open with Live Server SE using last parameters or choose new ones
 - **Protocol support**: HTTP and HTTPS (with self-signed certificates support)  
 - **HTTPS in WebView**: No HTTPS support in VS Code WebView (no certificats)
 - **Zero configuration** — just open a folder and go  
 - **Default port**: 5500  
 - **Network accessible**: Access your server from other devices on the same network (e.g., mobile testing) using your local IP address  
 - **Multi-language UI**: English, Français, Español, Deutsch  
-- **Dynamic UI**: Change language in settings, UI updates instantly (no restart needed)  
+- **Dynamic UI**: Change language in settings, UI updates instantly (no restart needed)
 
 ---
 
@@ -104,12 +105,30 @@ Experimental:
 
 ---
 
+## 💡 Ideas & Roadmap
+
+We are constantly working to improve Live Server Speed Edition! Here are some ideas and features we are considering for future releases:
+
+- **🔧 CLI Mode**: Run the server from command line without VS Code
+- **📊 Server Logs Panel**: View HTTP request logs directly in VS Code
+- **🎨 Custom CSS/JS Injection**: Automatically inject custom styles or scripts into all pages
+- **🔄 Multiple Server Instances**: Run multiple servers simultaneously on different ports
+- **🌐 Proxy Configuration**: Support for proxying requests to external APIs
+- **📋 Custom Response Headers**: Configure custom HTTP headers for all responses
+- **⚡ Server-Side Rendering**: Support for SSR frameworks
+- **🔐 Better HTTPS Management**: Certificate management UI and auto-renewal
+- **📱 Device Sync**: Synchronize scroll position and clicks between multiple devices
+- **🎯 Selective Reload**: Choose which file types trigger a reload
+
+Have an idea? [Open an issue](https://github.com/Lololegeek/live-server-speed-edition/issues) or submit a PR!
+
+---
+
 ## 👨‍💻 Author
 
 Created with ❤️ by **Lololegeek**  
 Want to contribute or suggest a feature? `https://github.com/Lololegeek/live-server-speed-edition/issues` or submit a PR!  
 Thank you !
-I'm a passioned développer, i'm the founder of ByteCode-Team, the fonder of ByteCode IDE, Todo In VS Code, Python HTTP Server and more... View other projects in my GitHub : https://github.com/Lololegeek
-
+I'm a passioned developper, i'm the founder of ByteCode-Team, the fonder of ByteCode IDE, Todo In VS Code, Python HTTP Server and more... View other projects in my GitHub : https://github.com/Lololegeek
 
 
