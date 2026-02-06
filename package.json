@@ -2,7 +2,7 @@
   "name": "live-server-speed-edition",
   "displayName": "Live Server Speed Edition",
   "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
-  "version": "1.2.7",
+  "version": "1.2.9",
   "keywords": [
     "live server",
     "live preview",
@@ -83,8 +83,30 @@
       {
         "command": "fast-http-server.goBack",
         "title": "Go Back (Setup)"
+      },
+      {
+        "command": "fast-http-server.openHtmlWithLastParams",
+        "title": "%openHtmlWithLastParams%"
+      },
+      {
+        "command": "fast-http-server.openHtmlWithNewParams",
+        "title": "%openHtmlWithNewParams%"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "fast-http-server.openHtmlWithLastParams",
+          "when": "resourceExtname == .html",
+          "group": "2_workspace@1"
+        },
+        {
+          "command": "fast-http-server.openHtmlWithNewParams",
+          "when": "resourceExtname == .html",
+          "group": "2_workspace@2"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "fast-http-server.toggleServer",
