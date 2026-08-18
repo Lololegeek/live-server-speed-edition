@@ -13,6 +13,7 @@ export type ServerLogLevel = 'info' | 'warn' | 'error';
 
 export interface ServerStartOptions {
   host?: string;
+  advertiseHost?: string;
   spaFallback?: boolean;
   usePolling?: boolean;
   ignoredPaths?: string[];
@@ -41,6 +42,7 @@ export function startServer(
   });
   const resolvedRoot = path.resolve(root);
   const host = options.host?.trim() || '0.0.0.0';
+  const advertiseHost = options.advertiseHost?.trim() || (host === '0.0.0.0' || host === '::' ? 'localhost' : host);
   const spaFallback = options.spaFallback ?? true;
   const reloadExtensions = new Set((options.reloadExtensions ?? []).map(normaliseExtension));
   const ignoredPaths = [
@@ -94,9 +96,21 @@ export function startServer(
     const reloadClient = `<script>
       (() => {
         const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const socket = new WebSocket(protocol + '//' + location.host + '/__live_reload');
-        socket.onmessage = () => location.reload();
-        socket.onclose = () => setTimeout(() => location.reload(), 1500);
+        let reconnectTimer;
+        const connect = () => {
+          try {
+            const socket = new WebSocket(protocol + '//' + location.host + '/__live_reload');
+            socket.onmessage = () => location.reload();
+            socket.onclose = () => {
+              // Reconnect without reloading the page. Reloading on every close
+              // caused an endless reload loop while the server was stopped.
+              reconnectTimer = setTimeout(connect, 1500);
+            };
+          } catch {
+            reconnectTimer = setTimeout(connect, 1500);
+          }
+        };
+        connect();
       })();
     </script>`;
     return html.includes('</body>') ? html.replace('</body>', `${reloadClient}</body>`) : `${html}${reloadClient}`;
@@ -121,7 +135,13 @@ export function startServer(
   });
   app.use(compression());
   app.use((req: Request, res: Response, next: NextFunction) => {
-    const requestPath = decodeURIComponent((req.originalUrl || '/').split('?')[0]);
+    let requestPath: string;
+    try {
+      requestPath = decodeURIComponent((req.originalUrl || '/').split('?')[0]);
+    } catch {
+      res.status(400).send('Invalid URL encoding');
+      return;
+    }
     const relativePath = requestPath === '/' ? 'index.html' : requestPath.replace(/^[/\\]+/, '');
     const filePath = path.resolve(resolvedRoot, relativePath);
 
@@ -147,7 +167,13 @@ export function startServer(
         next();
         return;
       }
-      const requestPath = decodeURIComponent((req.originalUrl || '/').split('?')[0]);
+      let requestPath: string;
+      try {
+        requestPath = decodeURIComponent((req.originalUrl || '/').split('?')[0]);
+      } catch {
+        res.status(400).send('Invalid URL encoding');
+        return;
+      }
       const acceptsHtml = String(req.headers.accept || '').includes('text/html');
       const looksLikeAsset = path.extname(requestPath) !== '';
       if (acceptsHtml && !looksLikeAsset && fs.existsSync(indexPath)) {
@@ -177,7 +203,10 @@ export function startServer(
 
   server.on('error', (error) => logger(`Server error: ${String(error)}`, 'error'));
   server.listen(port, host, () => {
-    const url = `${protocol}://localhost:${port}`;
+    const formattedHost = advertiseHost.includes(':') && !advertiseHost.startsWith('[')
+      ? `[${advertiseHost}]`
+      : advertiseHost;
+    const url = `${protocol}://${formattedHost}:${port}`;
     logger(`Server running at ${url} (bound to ${host})`);
     onReady(url);
   });

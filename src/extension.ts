@@ -50,6 +50,7 @@ function getServerOptions(root: string): ServerStartOptions {
   const reloadExtensions = config.get<string[]>('reloadExtensions', []) || [];
   return {
     host: config.get<string>('bindAddress', '0.0.0.0'),
+    advertiseHost: getAdvertisedHost(),
     spaFallback: config.get<boolean>('spaFallback', true),
     usePolling: config.get<boolean>('usePolling', false),
     ignoredPaths,
@@ -59,9 +60,15 @@ function getServerOptions(root: string): ServerStartOptions {
 }
 
 function getServingRoot(root: string): string {
-  const configuredRoot = vscode.workspace.getConfiguration('liveServerSpeed').get<string>('serverRoot', '')?.trim();
-  if (!configuredRoot) return root;
-  return path.isAbsolute(configuredRoot) ? configuredRoot : path.resolve(root, configuredRoot);
+  const config = vscode.workspace.getConfiguration('liveServerSpeed');
+  const configuredRoot = config.get<string>('serverRoot', '')?.trim();
+  if (configuredRoot) return path.isAbsolute(configuredRoot) ? configuredRoot : path.resolve(root, configuredRoot);
+
+  if (config.get<string>('frameworkMode', 'auto') === 'auto') {
+    const project = detectProject(root);
+    if (project.buildDirectory) return path.resolve(root, project.buildDirectory);
+  }
+  return root;
 }
 
 function startServer(
@@ -81,7 +88,7 @@ function startServer(
       try { void open(url); } catch (error) { writeServerLog(`Unable to open the browser: ${String(error)}`, 'warn'); }
     }
   };
-  return startHttpServer(servingRoot, port, handleReady, debounceTime, useHttps, certPath, keyPath, getServerOptions(servingRoot));
+  return startHttpServer(servingRoot, port, handleReady, debounceTime, useHttps, certPath, keyPath, getServerOptions(root));
 }
 
 const TRANSLATIONS: Record<string, Record<string, string>> = {
@@ -305,21 +312,21 @@ function detectNetworkIP(): string {
   let detectedIP = vscode.workspace.getConfiguration().get<string>('liveServerSpeed.defaultIP', '') || '';
   if (detectedIP === '') {
     const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-      const iface = interfaces[name]?.find(i => i.family === 'IPv4' && !i.internal);
-      if (iface) {
-        if (name.toLowerCase().includes('wi-fi') || name.toLowerCase().includes('wifi') || name.toLowerCase().includes('wlan')) {
-          detectedIP = iface.address;
-          break;
-        } else if (name.toLowerCase().includes('ethernet') && detectedIP === '') {
-          detectedIP = iface.address;
-        } else if (detectedIP === '') {
-          detectedIP = iface.address;
-        }
-      }
-    }
+    const candidates = Object.entries(interfaces)
+      .flatMap(([name, addresses]) => (addresses || [])
+        .filter(iface => iface.family === 'IPv4' && !iface.internal)
+        .map(iface => ({ name: name.toLowerCase(), address: iface.address })));
+    const ethernet = candidates.find(item => item.name.includes('ethernet'));
+    const wifi = candidates.find(item => item.name.includes('wi-fi') || item.name.includes('wifi') || item.name.includes('wlan') || item.name.includes('wireless'));
+    detectedIP = ethernet?.address || wifi?.address || candidates[0]?.address || '';
   }
   return detectedIP || 'localhost';
+}
+
+function getAdvertisedHost(): string {
+  const bindAddress = vscode.workspace.getConfiguration('liveServerSpeed').get<string>('bindAddress', '0.0.0.0').trim();
+  if (!bindAddress || bindAddress === '0.0.0.0' || bindAddress === '::') return detectNetworkIP();
+  return bindAddress;
 }
 
 // Helper to extract and inject CSS/JS from HTML content
@@ -520,6 +527,18 @@ export function activate(context: vscode.ExtensionContext) {
             continue;
           }
           writeServerLog(`Configured entry file was not found: ${configuredEntry}`, 'warn');
+        }
+        const detectedProject = detectProject(folder);
+        if (!configuredEntry && detectedProject.buildDirectory && detectedProject.entryFile) {
+          const detectedEntryPath = path.resolve(folder, detectedProject.entryFile);
+          const relativeToServingRoot = path.relative(servingRoot, detectedEntryPath);
+          if (!relativeToServingRoot.startsWith('..') && !path.isAbsolute(relativeToServingRoot)) {
+            selectedFile = relativeToServingRoot.split(path.sep).join('/');
+            setupState.selectedFile = selectedFile;
+            writeServerLog(`Serving detected ${detectedProject.type} build from ${servingRoot}.`);
+            step = 'protocol';
+            continue;
+          }
         }
         const files = await vscode.workspace.findFiles('**/*.html');
         const fileChoices = files.map(f => vscode.workspace.asRelativePath(f));
@@ -804,7 +823,7 @@ export function activate(context: vscode.ExtensionContext) {
       // Fallback to last known URL or construct from lastServerParams
       if (currentWebviewUrl) return currentWebviewUrl;
       if (lastServerParams) {
-        return `http${lastServerParams.useHttps ? 's' : ''}://${detectNetworkIP()}:${lastServerParams.port}/${lastServerParams.selectedFile}`;
+        return `http${lastServerParams.useHttps ? 's' : ''}://${getAdvertisedHost()}:${lastServerParams.port}/${lastServerParams.selectedFile}`;
       }
       return '';
     })();
@@ -1567,6 +1586,10 @@ export function activate(context: vscode.ExtensionContext) {
     if (stopServer) {
       stopServer();
       stopServer = null;
+      if (webviewPanel) {
+        webviewPanel.dispose();
+        webviewPanel = null;
+      }
       statusButton.text = getTranslation('start', '$(rocket) Start Live Server SE');
       statusButton.tooltip = getTranslation('startTooltip', 'Start Live Server SE');
       try { qrButton.hide(); reopenWebviewButton.hide(); } catch (e) { }

@@ -35,7 +35,29 @@ function hasAnyDependency(packageJson: Record<string, any>, names: string[]): bo
 function findExistingDirectory(root: string, candidates: string[]): string | null {
   for (const candidate of candidates) {
     const fullPath = path.join(root, candidate);
+    if (!fs.existsSync(fullPath)) continue;
     if (fs.existsSync(path.join(fullPath, 'index.html'))) return fullPath;
+
+    // Angular can put the browser build below dist/<project>/browser.
+    // Search only inside known build roots and keep the depth bounded so
+    // source folders are never accidentally selected as build output.
+    const queue: Array<{ directory: string; depth: number }> = [{ directory: fullPath, depth: 0 }];
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      if (current.depth >= 3) continue;
+      let entries: fs.Dirent[];
+      try {
+        entries = fs.readdirSync(current.directory, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const entry of entries) {
+        if (!entry.isDirectory() || entry.name === 'node_modules') continue;
+        const child = path.join(current.directory, entry.name);
+        if (fs.existsSync(path.join(child, 'index.html'))) return child;
+        queue.push({ directory: child, depth: current.depth + 1 });
+      }
+    }
   }
   return null;
 }
