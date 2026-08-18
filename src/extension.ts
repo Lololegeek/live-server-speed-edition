@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { startServer } from './server';
+import { startServer as startHttpServer, ServerStartOptions, ServerLogLevel } from './server';
+import { detectProject } from './projectDetector';
 import open from 'open';
 import chokidar from 'chokidar';
 import * as path from 'path';
@@ -21,6 +22,7 @@ let currentWebviewIsHttps: boolean | null = null;
 let currentDetectedIP: string = 'localhost';
 let lastServerParams: { folder: string; port: number; selectedFile: string; useHttps: boolean; choice: string } | null = null;
 let customShortcut: string | null = null;
+let serverOutputChannel: vscode.OutputChannel | null = null;
 let setupState: {
   step: 'port' | 'file' | 'protocol' | 'preview' | null;
   port?: string;
@@ -31,6 +33,56 @@ let setupState: {
 // Debug flag to help toggle and diagnose the back button visibility
 let debugBackVisible: boolean = false;
 let prevBackText: string | null = null;
+
+function writeServerLog(message: string, level: ServerLogLevel = 'info'): void {
+  const prefix = level === 'error' ? '[ERROR]' : level === 'warn' ? '[WARN]' : '[INFO]';
+  serverOutputChannel?.appendLine(`${new Date().toLocaleTimeString()} ${prefix} ${message}`);
+}
+
+function getServerOptions(root: string): ServerStartOptions {
+  const config = vscode.workspace.getConfiguration('liveServerSpeed');
+  const frameworkMode = config.get<string>('frameworkMode', 'auto');
+  const project = detectProject(root);
+  if (frameworkMode === 'auto' && project.type !== 'static' && project.type !== 'unknown') {
+    writeServerLog(`${project.description}. Le serveur statique utilise le fallback SPA ; le script ${project.devScript || 'de développement'} reste disponible pour le bundling.`);
+  }
+  const ignoredPaths = config.get<string[]>('ignoredPaths', []) || [];
+  const reloadExtensions = config.get<string[]>('reloadExtensions', []) || [];
+  return {
+    host: config.get<string>('bindAddress', '0.0.0.0'),
+    spaFallback: config.get<boolean>('spaFallback', true),
+    usePolling: config.get<boolean>('usePolling', false),
+    ignoredPaths,
+    reloadExtensions,
+    logger: writeServerLog
+  };
+}
+
+function getServingRoot(root: string): string {
+  const configuredRoot = vscode.workspace.getConfiguration('liveServerSpeed').get<string>('serverRoot', '')?.trim();
+  if (!configuredRoot) return root;
+  return path.isAbsolute(configuredRoot) ? configuredRoot : path.resolve(root, configuredRoot);
+}
+
+function startServer(
+  root: string,
+  port: number,
+  onReady: (url: string) => void,
+  debounceTime?: number,
+  useHttps?: boolean,
+  certPath?: string,
+  keyPath?: string
+) {
+  const servingRoot = getServingRoot(root);
+  const openAutomatically = vscode.workspace.getConfiguration('liveServerSpeed').get<boolean>('openBrowserAutomatically', false);
+  const handleReady = (url: string) => {
+    onReady(url);
+    if (openAutomatically) {
+      try { void open(url); } catch (error) { writeServerLog(`Unable to open the browser: ${String(error)}`, 'warn'); }
+    }
+  };
+  return startHttpServer(servingRoot, port, handleReady, debounceTime, useHttps, certPath, keyPath, getServerOptions(servingRoot));
+}
 
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
@@ -318,6 +370,9 @@ function extractCssAndJsFromHtml(content: string, documentDir: string): { css: S
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  serverOutputChannel = vscode.window.createOutputChannel('Live Server Speed Edition');
+  context.subscriptions.push(serverOutputChannel);
+  writeServerLog('Extension activated.');
   statusButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   const instantPreviewButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
   qrButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
@@ -453,6 +508,19 @@ export function activate(context: vscode.ExtensionContext) {
 
       if (step === 'file') {
         setupState.step = 'file';
+        const configuredEntry = vscode.workspace.getConfiguration('liveServerSpeed').get<string>('entryFile', '')?.trim();
+        const servingRoot = getServingRoot(folder);
+        if (configuredEntry) {
+          const configuredPath = path.resolve(servingRoot, configuredEntry);
+          const relativeToRoot = path.relative(servingRoot, configuredPath);
+          if (!relativeToRoot.startsWith('..') && !path.isAbsolute(relativeToRoot) && fs.existsSync(configuredPath) && fs.statSync(configuredPath).isFile()) {
+            selectedFile = relativeToRoot.split(path.sep).join('/');
+            setupState.selectedFile = selectedFile;
+            step = 'protocol';
+            continue;
+          }
+          writeServerLog(`Configured entry file was not found: ${configuredEntry}`, 'warn');
+        }
         const files = await vscode.workspace.findFiles('**/*.html');
         const fileChoices = files.map(f => vscode.workspace.asRelativePath(f));
 
@@ -1468,6 +1536,44 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(openKeybindingsCmd);
+
+  const openSettingsCmd = vscode.commands.registerCommand('fast-http-server.openSettings', async () => {
+    await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:Lololegeek.live-server-speed-edition');
+  });
+  context.subscriptions.push(openSettingsCmd);
+
+  const showLogsCmd = vscode.commands.registerCommand('fast-http-server.showLogs', () => {
+    serverOutputChannel?.show(true);
+  });
+  context.subscriptions.push(showLogsCmd);
+
+  const detectProjectCmd = vscode.commands.registerCommand('fast-http-server.detectProject', () => {
+    const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!folder) {
+      vscode.window.showErrorMessage(getTranslation('noFolder', 'No folder is open in VS Code.'));
+      return;
+    }
+    const project = detectProject(folder);
+    const build = project.buildDirectory ? ` Build: ${project.buildDirectory}.` : '';
+    const script = project.devScript ? ` Script: ${project.packageManager || 'npm'} run ${project.devScript}.` : '';
+    const message = `${project.description}.${build}${script}`;
+    writeServerLog(message);
+    serverOutputChannel?.show(true);
+    vscode.window.showInformationMessage(message);
+  });
+  context.subscriptions.push(detectProjectCmd);
+
+  const restartCmd = vscode.commands.registerCommand('fast-http-server.restartServer', async () => {
+    if (stopServer) {
+      stopServer();
+      stopServer = null;
+      statusButton.text = getTranslation('start', '$(rocket) Start Live Server SE');
+      statusButton.tooltip = getTranslation('startTooltip', 'Start Live Server SE');
+      try { qrButton.hide(); reopenWebviewButton.hide(); } catch (e) { }
+    }
+    await vscode.commands.executeCommand(lastServerParams ? 'fast-http-server.relaunchLast' : 'fast-http-server.toggleServer');
+  });
+  context.subscriptions.push(restartCmd);
 
   // Command to open HTML file with last used parameters
   const openHtmlWithLastParamsCmd = vscode.commands.registerCommand('fast-http-server.openHtmlWithLastParams', async (clickedFile: vscode.Uri) => {

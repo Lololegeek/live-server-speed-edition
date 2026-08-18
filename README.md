@@ -1,6 +1,6 @@
 # 🚀 Live Server Speed Edition 
 
-Version : 1.2.9
+Version : 1.3.0
 
 [![Installs](https://img.shields.io/visual-studio-marketplace/i/Lololegeek.live-server-speed-edition?label=Installs)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
 [![Rating](https://img.shields.io/visual-studio-marketplace/r/Lololegeek.live-server-speed-edition?label=Rating)](https://marketplace.visualstudio.com/items?itemName=Lololegeek.live-server-speed-edition)
@@ -29,6 +29,12 @@ A blazing-fast local HTTP server with live reload — built right into VS Code.
 - **Zero configuration** — just open a folder and go  
 - **Default port**: 5500  
 - **Network accessible**: Access your server from other devices on the same network (e.g., mobile testing) using your local IP address  
+- **Reliable network live reload**: Reload clients use the current host, so QR-code/mobile previews can reload correctly
+- **SPA routing support**: React, Vue, Angular, Vite, Svelte and similar apps can use an `index.html` fallback for client-side routes
+- **Framework detection**: Detects common package managers, framework projects, build folders and development scripts
+- **Server logs panel**: Inspect requests, file changes, reload events, warnings and errors in a dedicated VS Code Output channel
+- **Restart command**: Restart the server with the last parameters without repeating the setup wizard
+- **Advanced settings**: Configure bind address, served folder, entry file, watcher mode, ignored paths and reload extensions
 - **Multi-language UI**: English, Français, Español, Deutsch  
 - **Dynamic UI**: Change language in settings, UI updates instantly (no restart needed)
 
@@ -119,6 +125,7 @@ We are constantly working to improve Live Server Speed Edition! Here are some id
 - **🔐 Better HTTPS Management**: Certificate management UI and auto-renewal
 - **📱 Device Sync**: Synchronize scroll position and clicks between multiple devices
 - **🎯 Selective Reload**: Choose which file types trigger a reload
+- **🧩 Framework projects**: Automatic detection for React, Vue, Angular, Vite, Svelte, Next and Nuxt projects. The extension serves static/build output and keeps the framework's own dev script available for bundling.
 
 Have an idea? [Open an issue](https://github.com/Lololegeek/live-server-speed-edition/issues) or submit a PR!
 
@@ -130,5 +137,3 @@ Created with ❤️ by **Lololegeek**
 Want to contribute or suggest a feature? `https://github.com/Lololegeek/live-server-speed-edition/issues` or submit a PR!  
 Thank you !
 I'm a passioned developper, i'm the founder of ByteCode-Team, the fonder of ByteCode IDE, Todo In VS Code, Python HTTP Server and more... View other projects in my GitHub : https://github.com/Lololegeek
-
-
