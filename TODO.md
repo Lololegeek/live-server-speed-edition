@@ -19,6 +19,16 @@
 - [x] Back button in server configuration
 - [x] Christmas easter egg
 
+## Completed in 1.3.0
+
+- [x] Network/mobile live reload using the current host
+- [x] Server logs panel
+- [x] Advanced server settings
+- [x] SPA fallback for client-side routes
+- [x] Restart command
+- [x] Framework/project detection for React, Vue, Angular, Vite, Svelte, Next and Nuxt
+- [x] Native filesystem watching by default with polling fallback
+
 ## Future
 
 - [ ] CLI mode
@@ -28,4 +38,4 @@
 - [ ] Multiple server instances support
 - [ ] Proxy configuration
 - [ ] Custom response headers
-- [ ] Server-side rendering support
+- [ ] Optional framework dev-server process management (bundling is still handled by Vite, Angular CLI, Next, Nuxt, etc.)
