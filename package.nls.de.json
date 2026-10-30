@@ -1,10 +1,12 @@
 {
-  "liveServerSpeed.language.description": "Sprache, die von der Erweiterung verwendet wird (en, fr, es, de) (Die Einstellungen ändern die Sprache nach dem Neustart von VS Code)",
+  "liveServerSpeed.language.description": "Sprache der Erweiterung für Statusleiste und übersetzte Texte (auto, en, fr, es, de, it, pt, ja, zh, ko, ru). Einige Laufzeitdiagnosen und Verwaltungsfunktionen sind weiterhin auf Englisch.",
   "liveServerSpeed.debounceTime.description": "Debounce-Zeit in Millisekunden für die Dateiänderungserkennung und sofortige Vorschau-Updates (50-1000ms)",
   "liveServerSpeed.relaunchShortcut.description": "Standard-Tastenkürzel zum Neustarten des Servers mit den letzten Parametern (Benutzer kann es in keybindings.json überschreiben)",
   "liveServerSpeed.openKeybindings.description": "Tastenkürzel für Live Server Speed Edition öffnen (auf true setzen, um zu öffnen)",
   "liveServerSpeed.defaultIP.description": "Standard-IP-Adresse für den Server (leer lassen, um automatisch zu erkennen)",
   "liveServerSpeed.httpsCertPath.description": "Pfad zur TLS-Zertifikatdatei, die für HTTPS verwendet werden soll (optional). Wenn leer und die automatische Generierung aktiviert ist, erstellt die Erweiterung eines.",
   "liveServerSpeed.httpsKeyPath.description": "Pfad zur TLS-Privatkey-Datei, die für HTTPS verwendet werden soll (optional). Wenn leer und die automatische Generierung aktiviert ist, erstellt die Erweiterung einen.",
-  "liveServerSpeed.httpsAutoGenerate.description": "Wenn true, generiert die Erweiterung automatisch und speichert ein selbstsigniertes Zertifikat für HTTPS, falls keine Zertifikatspfade angegeben sind."
+  "liveServerSpeed.httpsAutoGenerate.description": "Wenn true, generiert die Erweiterung automatisch und speichert ein selbstsigniertes Zertifikat für HTTPS, falls keine Zertifikatspfade angegeben sind.",
+  "openHtmlWithLastParams": "Mit Live Server SE öffnen (letzte Parameter)",
+  "openHtmlWithNewParams": "Mit Live Server SE öffnen (Parameter wählen...)"
 }

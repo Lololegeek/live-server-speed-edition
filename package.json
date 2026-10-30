@@ -2,44 +2,18 @@
   "name": "live-server-speed-edition",
   "displayName": "Live Server Speed Edition",
   "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
-  "version": "1.2.9",
+  "version": "1.3.0",
   "keywords": [
     "live server",
-    "live preview",
-    "reload",
-    "auto reload",
-    "hot reload",
-    "local server",
-    "web development",
-    "frontend",
-    "html",
-    "css",
-    "javascript",
+    "php",
+    "react",
     "typescript",
-    "extension",
-    "vscode",
-    "development",
-    "localhost",
-    "http server",
-    "http",
-    "https",
-    "localhost server",
-    "live",
+    "vite",
     "preview",
-    "reloads",
-    "auto",
-    "hot",
-    "local",
-    "server",
-    "Microsoft",
-    "WebView",
-    "speed",
-    "web",
-    "Live Server",
-    "fast",
-    "productivity",
-    "developer tools",
-    "Christmas"
+    "hot reload",
+    "web development",
+    "vue",
+    "svelte"
   ],
   "publisher": "Lololegeek",
   "icon": "icon.png",
@@ -48,14 +22,13 @@
     "url": "https://github.com/Lololegeek/live-server-speed-edition"
   },
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
-    "Programming Languages",
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -81,8 +54,16 @@
         "title": "Open Extension Settings"
       },
       {
-        "command": "fast-http-server.goBack",
-        "title": "Go Back (Setup)"
+        "command": "fast-http-server.restartServer",
+        "title": "Restart Live Server"
+      },
+      {
+        "command": "fast-http-server.showLogs",
+        "title": "Show Live Server Logs"
+      },
+      {
+        "command": "fast-http-server.detectProject",
+        "title": "Detect Web Project"
       },
       {
         "command": "fast-http-server.openHtmlWithLastParams",
@@ -91,18 +72,74 @@
       {
         "command": "fast-http-server.openHtmlWithNewParams",
         "title": "%openHtmlWithNewParams%"
+      },
+      {
+        "command": "fast-http-server.instantPreview",
+        "title": "Live Server: Instant Preview (unsaved HTML)"
+      },
+      {
+        "command": "fast-http-server.reopenWebview",
+        "title": "Live Server: Reopen WebView"
+      },
+      {
+        "command": "fast-http-server.showQr",
+        "title": "Live Server: Show QR code"
+      },
+      {
+        "command": "fast-http-server.copyUrl",
+        "title": "Live Server: Copy URL"
+      },
+      {
+        "command": "fast-http-server.stopServer",
+        "title": "Live Server: Stop"
+      },
+      {
+        "command": "fast-http-server.configureServer",
+        "title": "Live Server: Configure Server..."
+      },
+      {
+        "command": "fast-http-server.quickStart",
+        "title": "Live Server: Quick Start"
+      },
+      {
+        "command": "fast-http-server.manageServers",
+        "title": "Live Server: Manage Server Sessions"
+      },
+      {
+        "command": "fast-http-server.stopAllServers",
+        "title": "Live Server: Stop All Servers"
+      },
+      {
+        "command": "fast-http-server.saveProfile",
+        "title": "Live Server: Save Launch Profile"
+      },
+      {
+        "command": "fast-http-server.deleteProfile",
+        "title": "Live Server: Delete Launch Profile"
+      },
+      {
+        "command": "fast-http-server.launchProfile",
+        "title": "Live Server: Launch Profile"
+      },
+      {
+        "command": "fast-http-server.selectInjectedFiles",
+        "title": "Live Server: Select Injected CSS/JS Files"
+      },
+      {
+        "command": "fast-http-server.clearInjectedFiles",
+        "title": "Live Server: Clear Injected CSS/JS Files"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "command": "fast-http-server.openHtmlWithLastParams",
-          "when": "resourceExtname == .html",
+          "when": "resourceExtname == .html || resourceExtname == .htm || resourceExtname == .php",
           "group": "2_workspace@1"
         },
         {
           "command": "fast-http-server.openHtmlWithNewParams",
-          "when": "resourceExtname == .html",
+          "when": "resourceExtname == .html || resourceExtname == .htm || resourceExtname == .php",
           "group": "2_workspace@2"
         }
       ]
@@ -122,12 +159,19 @@
         "liveServerSpeed.language": {
           "type": "string",
           "enum": [
+            "auto",
             "en",
             "fr",
             "es",
-            "de"
+            "de",
+            "it",
+            "pt",
+            "ja",
+            "zh",
+            "ko",
+            "ru"
           ],
-          "default": "en",
+          "default": "auto",
           "description": "%liveServerSpeed.language.description%"
         },
         "liveServerSpeed.debounceTime": {
@@ -137,36 +181,245 @@
           "maximum": 1000,
           "description": "%liveServerSpeed.debounceTime.description%"
         },
-        "liveServerSpeed.openKeybindings": {
+        "liveServerSpeed.serverRoot": {
+          "type": "string",
+          "default": "",
+          "description": "Optional folder to serve instead of the workspace root. Relative paths are resolved from the workspace."
+        },
+        "liveServerSpeed.entryFile": {
+          "type": "string",
+          "default": "",
+          "description": "Default HTML entry file. Leave empty to detect index.html or a framework build output."
+        },
+        "liveServerSpeed.spaFallback": {
+          "type": "boolean",
+          "default": true,
+          "description": "Serve index.html for extension-less routes used by React, Vue, Angular and other SPAs."
+        },
+        "liveServerSpeed.usePolling": {
           "type": "boolean",
           "default": false,
-          "description": "%liveServerSpeed.openKeybindings.description%"
+          "description": "Use polling for file watching. Enable this only when native file events do not work."
+        },
+        "liveServerSpeed.ignoredPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Additional glob patterns ignored by the file watcher."
+        },
+        "liveServerSpeed.reloadExtensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Only reload for these file extensions, for example .html, .css and .js. Leave empty for all files."
+        },
+        "liveServerSpeed.frameworkMode": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "static"
+          ],
+          "default": "auto",
+          "description": "Framework handling mode. Auto detects Vite, React, Vue, Angular, Svelte, Next and Nuxt projects."
+        },
+        "liveServerSpeed.port": {
+          "type": "number",
+          "default": 5500,
+          "description": "Public preview port.",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "liveServerSpeed.liveEditing": {
+          "type": "boolean",
+          "default": true,
+          "description": "Reflect unsaved edits. PHP and managed frameworks run in an isolated temporary project copy."
+        },
+        "liveServerSpeed.phpPath": {
+          "type": "string",
+          "default": "php",
+          "description": "PHP executable installed on your computer."
+        },
+        "liveServerSpeed.packageManager": {
+          "type": "string",
+          "default": "npm",
+          "description": "Package manager used to launch an existing package.json script.",
+          "enum": [
+            "npm",
+            "pnpm",
+            "yarn",
+            "bun"
+          ]
+        },
+        "liveServerSpeed.upstreamUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:5173",
+          "description": "URL produced by the development script; this extension does not override framework port flags."
+        },
+        "liveServerSpeed.headers": {
+          "type": "object",
+          "default": {},
+          "description": "Custom response headers."
+        },
+        "liveServerSpeed.httpsCertPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional TLS certificate path. Supply both certificate and key."
+        },
+        "liveServerSpeed.httpsKeyPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional TLS private key path."
+        },
+        "liveServerSpeed.interfaceMode": {
+          "type": "string",
+          "default": "full",
+          "description": "Full setup or Lite one-click launch. Lite displays only the Start/Stop button.",
+          "enum": [
+            "full",
+            "lite"
+          ]
+        },
+        "liveServerSpeed.showStartButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Start/Stop button. Commands and keyboard shortcuts remain available when hidden."
+        },
+        "liveServerSpeed.showQrButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show QR button while running in Full mode."
+        },
+        "liveServerSpeed.showReopenButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Reopen WebView button while running in Full mode."
+        },
+        "liveServerSpeed.showCopyUrlButton": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show Copy URL button while running in Full mode."
+        },
+        "liveServerSpeed.defaultPreview": {
+          "type": "string",
+          "default": "browser",
+          "description": "Preview destination for the first Lite launch.",
+          "enum": [
+            "browser",
+            "webview"
+          ]
+        },
+        "liveServerSpeed.liteRuntime": {
+          "type": "string",
+          "default": "auto",
+          "description": "Runtime for the first Lite launch; subsequent launches reuse workspace parameters.",
+          "enum": [
+            "auto",
+            "static",
+            "php",
+            "framework"
+          ]
+        },
+        "liveServerSpeed.requestLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Log each HTTP request. Disabled by default to reduce output overhead."
+        },
+        "liveServerSpeed.nativeHmr": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use framework HMR without a duplicate full-reload watcher. Disable for frameworks without HMR."
+        },
+        "liveServerSpeed.protectLAN": {
+          "type": "boolean",
+          "default": true,
+          "description": "Require a private session URL/QR code before granting LAN clients an HTTP-only session cookie. Restart servers to apply. Use HTTPS on untrusted networks."
+        },
+        "liveServerSpeed.browserConsole": {
+          "type": "boolean",
+          "default": false,
+          "description": "Forward browser console messages and JavaScript errors to the session Output channel (up to 20 messages/second per client). Restart to apply."
+        },
+        "liveServerSpeed.apiProxy": {
+          "type": "array",
+          "default": [],
+          "description": "Proxy HTTP API prefixes to local development backends. Longest prefix wins. Restart servers to apply.",
+          "items": {
+            "type": "object",
+            "required": [
+              "prefix",
+              "target"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "prefix": {
+                "type": "string",
+                "description": "Path prefix, for example /api"
+              },
+              "target": {
+                "type": "string",
+                "description": "Localhost HTTP/HTTPS origin, for example http://127.0.0.1:3000"
+              },
+              "stripPrefix": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        "liveServerSpeed.injectedFiles": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Explicit workspace-relative CSS/JS files to inject into previews. Use Select Injected CSS/JS Files; restart to apply. Page CSP is preserved and may block injection."
         }
       }
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run bundle",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test test/extension.test.cjs test/server.test.cjs",
+    "check": "tsc -p . --noEmit",
+    "package": "vsce package --no-dependencies",
+    "bundle": "npm run compile && esbuild src/extension.ts --bundle --platform=node --target=node18 --external:vscode --external:fsevents --outfile=dist/extension.js",
+    "benchmark": "npm run compile && node scripts/benchmark.cjs"
   },
   "devDependencies": {
-    "@types/compression": "^1.8.1",
     "@types/express": "^5.0.3",
-    "@types/mocha": "^10.0.10",
+    "@types/http-proxy": "^1.17.17",
     "@types/node": "^20.5.0",
-    "@types/open": "^6.1.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/vscode": "1.85.0",
     "@types/ws": "^8.5.4",
-    "mocha": "^11.7.1",
+    "@vscode/vsce": "^4.1.0",
+    "esbuild": "^0.28.2",
+    "prettier": "^3.9.10",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "typescript": "^5.2.0",
-    "vscode": "^1.1.35"
+    "vite": "^8.3.5"
   },
   "dependencies": {
     "chokidar": "^3.5.3",
-    "compression": "^1.8.1",
     "express": "^5.1.0",
-    "open": "^10.2.0",
+    "http-proxy": "^1.18.1",
+    "qrcode": "^1.5.4",
     "selfsigned": "^2.1.1",
     "ws": "^8.13.0"
-  }
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Starting servers and project scripts requires workspace trust."
+    },
+    "virtualWorkspaces": false
+  },
+  "license": "MIT"
 }
