@@ -16,20 +16,28 @@ export function managedProcess(
     cwd,
     env: { ...process.env, ...env },
     shell: false,
+    windowsVerbatimArguments:
+      process.platform === "win32" && command.toLowerCase().endsWith("cmd.exe"),
     detached: process.platform !== "win32",
     stdio: ["ignore", "pipe", "pipe"],
   });
   let failure: Error | undefined;
+  let recentOutput = "";
+  const output = (data: Buffer) => {
+    const message = String(data).trimEnd();
+    recentOutput = (recentOutput + "\n" + message).slice(-4096);
+    log(message);
+  };
   child.on("error", (error) => {
     failure = error;
     log(String(error));
   });
   child.on("exit", (code, signal) => {
-    failure = new Error(`Process exited (${code ?? signal})`);
+    failure = new Error(`Process exited (${code ?? signal})${recentOutput}`);
     log(String(failure));
   });
-  child.stdout?.on("data", (data) => log(String(data).trimEnd()));
-  child.stderr?.on("data", (data) => log(String(data).trimEnd()));
+  child.stdout?.on("data", output);
+  child.stderr?.on("data", output);
   let closed = false;
   return {
     ready: async (url, signal) => {

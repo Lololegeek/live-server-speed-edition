@@ -8,6 +8,7 @@ export interface RuntimeOptions extends Omit<
   GatewayOptions,
   "root" | "port" | "host"
 > {
+  nativeHmr?: boolean;
   signal?: AbortSignal;
   php: string;
   packageManager: string;
@@ -21,7 +22,9 @@ export async function launch(
   let upstream: URL | undefined;
   try {
     if (spec.instant && ["php", "framework"].includes(spec.mode)) {
-      shadow = await mirror(spec.workspace, options.log, spec.mode !== "php");
+      shadow = await mirror(spec.workspace, options.log, spec.mode !== "php", {
+        signal: options.signal,
+      });
       spec = {
         ...spec,
         root: path.resolve(
@@ -87,6 +90,7 @@ export async function launch(
       host: spec.host,
       upstream,
       protectFiles: spec.mode === "php",
+      watchFiles: spec.mode !== "framework" || options.nativeHmr === false,
     });
     return {
       url: server.url,

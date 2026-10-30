@@ -3,11 +3,14 @@ import { Launch, Running } from "./types";
 import { launch } from "../runtime/launch";
 import { config } from "./config";
 import { Preview } from "../ui/preview";
+import { inside } from "./paths";
 import { entryUrl } from "./paths";
+import { buttonVisibility } from "../ui/visibility";
 import { t } from "../ui/i18n";
 export class Controller implements vscode.Disposable {
   private startup?: AbortController;
   private editTimer?: NodeJS.Timeout;
+  private editPaths = new Set<string>();
   private running?: Running;
   private spec?: Launch;
   private busy = false;
@@ -19,6 +22,14 @@ export class Controller implements vscode.Disposable {
     vscode.StatusBarAlignment.Left,
     100,
   );
+  readonly reopenButton = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    98,
+  );
+  readonly copyButton = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    97,
+  );
   readonly qr = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     99,
@@ -28,10 +39,19 @@ export class Controller implements vscode.Disposable {
     this.qr.command = "fast-http-server.showQr";
     this.qr.text = "$(qr-code)";
     this.qr.tooltip = "QR code";
+    this.reopenButton.command = "fast-http-server.reopenWebview";
+    this.reopenButton.text = "$(window)";
+    this.reopenButton.tooltip = "Reopen WebView";
+    this.copyButton.command = "fast-http-server.copyUrl";
+    this.copyButton.text = "$(link)";
+    this.copyButton.tooltip = "Copy preview URL";
     this.render();
   }
   log = (message: string) =>
     this.output.appendLine(new Date().toLocaleTimeString() + " " + message);
+  get starting() {
+    return this.busy;
+  }
   get active() {
     return Boolean(this.running);
   }
@@ -45,9 +65,26 @@ export class Controller implements vscode.Disposable {
         ? t("stop")
         : t("start");
     this.status.tooltip = this.running?.url || "Live Server Speed Edition";
-    this.status.show();
-    if (this.active) this.qr.show();
-    else this.qr.hide();
+    const c = vscode.workspace.getConfiguration("liveServerSpeed");
+    const visibility = buttonVisibility(
+      {
+        mode: c.get("interfaceMode", "full"),
+        start: c.get("showStartButton", true),
+        qr: c.get("showQrButton", true),
+        reopen: c.get("showReopenButton", true),
+        copy: c.get("showCopyUrlButton", false),
+      },
+      this.active,
+    );
+    for (const [name, item] of Object.entries({
+      start: this.status,
+      qr: this.qr,
+      reopen: this.reopenButton,
+      copy: this.copyButton,
+    })) {
+      if (visibility[name as keyof typeof visibility]) item.show();
+      else item.hide();
+    }
   }
   async start(spec: Launch) {
     if (this.busy) return;
@@ -86,6 +123,7 @@ export class Controller implements vscode.Disposable {
   async stop() {
     this.startup?.abort();
     if (this.editTimer) clearTimeout(this.editTimer);
+    this.editPaths.clear();
     const running = this.running;
     this.running = undefined;
     this.preview.dispose();
@@ -116,17 +154,32 @@ export class Controller implements vscode.Disposable {
       );
   }
   changed(file: string, content?: string) {
-    if (!this.spec?.instant) return;
+    if (
+      !this.spec?.instant ||
+      !inside(this.running?.update ? this.spec.workspace : this.spec.root, file)
+    )
+      return;
     if (this.running?.update) void this.running.update(file, content);
     else {
       if (this.editTimer) clearTimeout(this.editTimer);
-      this.editTimer = setTimeout(() => this.running?.reload?.([file]), 75);
+      this.editPaths.add(file);
+      this.editTimer = setTimeout(
+        () => {
+          this.running?.reload?.([...this.editPaths]);
+          this.editPaths.clear();
+        },
+        vscode.workspace
+          .getConfiguration("liveServerSpeed")
+          .get<number>("debounceTime", 50),
+      );
     }
   }
   dispose() {
     void this.stop();
     this.status.dispose();
     this.qr.dispose();
+    this.reopenButton.dispose();
+    this.copyButton.dispose();
     this.output.dispose();
   }
 }

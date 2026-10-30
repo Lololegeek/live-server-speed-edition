@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { Controller } from "./core/controller";
+import { quickStart } from "./commands/quickStart";
 import { setup } from "./commands/setup";
 import { detectProject } from "./projectDetector";
 import { Launch } from "./core/types";
@@ -23,11 +24,24 @@ export function activate(context: vscode.ExtensionContext) {
       ),
     );
   command("toggleServer", async () => {
-    if (app.active) await app.stop();
+    if (app.active || app.starting) await app.stop();
     else {
-      const spec = await setup(undefined, app.last);
+      const spec =
+        vscode.workspace
+          .getConfiguration("liveServerSpeed")
+          .get<string>("interfaceMode", "full") === "lite"
+          ? await quickStart(app.last)
+          : await setup(undefined, app.last);
       if (spec) await app.start(spec);
     }
+  });
+  command("configureServer", async () => {
+    const spec = await setup(undefined, app.last);
+    if (spec) await app.start(spec);
+  });
+  command("quickStart", async () => {
+    const spec = await quickStart(app.last);
+    if (spec) await app.start(spec);
   });
   command("openHtmlWithNewParams", async (uri) => {
     const spec = await setup(uri, app.last);
@@ -106,7 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration("liveServerSpeed.language")) app.render();
+      if (e.affectsConfiguration("liveServerSpeed")) app.render();
     }),
     vscode.workspace.onDidSaveTextDocument((d) => app.changed(d.uri.fsPath)),
     vscode.workspace.onDidChangeTextDocument((e) =>

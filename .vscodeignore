@@ -22,3 +22,5 @@ node_modules/**
 dist/**
 !dist/extension.js
 *.gif
+
+scripts/**

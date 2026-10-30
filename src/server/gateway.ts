@@ -20,6 +20,8 @@ export interface GatewayOptions {
   tls?: { key: Buffer | string; cert: Buffer | string };
   upstream?: URL;
   protectFiles?: boolean;
+  watchFiles?: boolean;
+  requestLogging?: boolean;
   spa: boolean;
   debounce: number;
   polling: boolean;
@@ -73,9 +75,10 @@ export async function gateway(o: GatewayOptions): Promise<Running> {
   app.use((req, res, next) => {
     for (const [key, value] of Object.entries(o.headers))
       res.setHeader(key, value);
-    res.on("finish", () =>
-      o.log(req.method + " " + req.url + " " + res.statusCode),
-    );
+    if (o.requestLogging)
+      res.on("finish", () =>
+        o.log(req.method + " " + req.url + " " + res.statusCode),
+      );
     next();
   });
   app.get("/__live_server_se/client.js", (_req, res) => {
@@ -173,18 +176,19 @@ export async function gateway(o: GatewayOptions): Promise<Running> {
         resolve();
       });
     });
-    stopWatching = watch(
-      root,
-      o,
-      (paths) => {
-        o.log("Reload: " + paths.join(", "));
-        const data = JSON.stringify({ type: "reload", paths });
-        ws.clients.forEach((c) => {
-          if (c.readyState === WebSocket.OPEN) c.send(data);
-        });
-      },
-      o.log,
-    );
+    if (o.watchFiles !== false)
+      stopWatching = watch(
+        root,
+        o,
+        (paths) => {
+          o.log("Reload: " + paths.join(", "));
+          const data = JSON.stringify({ type: "reload", paths });
+          ws.clients.forEach((c) => {
+            if (c.readyState === WebSocket.OPEN) c.send(data);
+          });
+        },
+        o.log,
+      );
   } catch (error) {
     await cleanup();
     throw error;

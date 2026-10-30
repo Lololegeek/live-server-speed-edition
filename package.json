@@ -92,6 +92,14 @@
       {
         "command": "fast-http-server.stopServer",
         "title": "Live Server: Stop"
+      },
+      {
+        "command": "fast-http-server.configureServer",
+        "title": "Live Server: Configure Server..."
+      },
+      {
+        "command": "fast-http-server.quickStart",
+        "title": "Live Server: Quick Start"
       }
     ],
     "menus": {
@@ -231,6 +239,65 @@
           "type": "string",
           "default": "",
           "description": "Optional TLS private key path."
+        },
+        "liveServerSpeed.interfaceMode": {
+          "type": "string",
+          "default": "full",
+          "description": "Full setup or Lite one-click launch. Lite displays only the Start/Stop button.",
+          "enum": [
+            "full",
+            "lite"
+          ]
+        },
+        "liveServerSpeed.showStartButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Start/Stop button. Commands and keyboard shortcuts remain available when hidden."
+        },
+        "liveServerSpeed.showQrButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show QR button while running in Full mode."
+        },
+        "liveServerSpeed.showReopenButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Reopen WebView button while running in Full mode."
+        },
+        "liveServerSpeed.showCopyUrlButton": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show Copy URL button while running in Full mode."
+        },
+        "liveServerSpeed.defaultPreview": {
+          "type": "string",
+          "default": "browser",
+          "description": "Preview destination for the first Lite launch.",
+          "enum": [
+            "browser",
+            "webview"
+          ]
+        },
+        "liveServerSpeed.liteRuntime": {
+          "type": "string",
+          "default": "auto",
+          "description": "Runtime for the first Lite launch; subsequent launches reuse workspace parameters.",
+          "enum": [
+            "auto",
+            "static",
+            "php",
+            "framework"
+          ]
+        },
+        "liveServerSpeed.requestLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Log each HTTP request. Disabled by default to reduce output overhead."
+        },
+        "liveServerSpeed.nativeHmr": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use framework HMR without a duplicate full-reload watcher. Disable for frameworks without HMR."
         }
       }
     }
@@ -242,7 +309,8 @@
     "test": "npm run compile && node --test test/extension.test.cjs test/server.test.cjs",
     "check": "tsc -p . --noEmit",
     "package": "vsce package --no-dependencies",
-    "bundle": "npm run compile && esbuild src/extension.ts --bundle --platform=node --target=node18 --external:vscode --external:fsevents --outfile=dist/extension.js"
+    "bundle": "npm run compile && esbuild src/extension.ts --bundle --platform=node --target=node18 --external:vscode --external:fsevents --outfile=dist/extension.js",
+    "benchmark": "npm run compile && node scripts/benchmark.cjs"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

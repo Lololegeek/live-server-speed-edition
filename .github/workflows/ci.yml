@@ -4,7 +4,9 @@ permissions:
   contents: read
 jobs:
   test:
+    timeout-minutes: 10
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         node: [20, 22]

@@ -372,3 +372,131 @@ test("unsaved static document and resource overlays are served without disk writ
   });
   assert.match(await fs.readFile(path.join(root, "page.htm"), "utf8"), /saved/);
 });
+test("Lite quick launch selects the current HTML/PHP file and preserves per-workspace parameters", async (t) => {
+  const { quickLaunch } = require("../dist/core/quickLaunch");
+  const root = await fixture(t);
+  const html = path.join(root, "page.html");
+  await fs.writeFile(html, "html");
+  const settings = {
+    root: "",
+    entry: "",
+    port: 5500,
+    preview: "browser",
+    liveEditing: true,
+    upstream: "http://127.0.0.1:5173",
+    runtime: "auto",
+  };
+  const spec = quickLaunch(root, html, settings);
+  assert.equal(spec.mode, "static");
+  assert.equal(spec.entry, "page.html");
+  assert.equal(spec.host, "127.0.0.1");
+  const php = path.join(root, "index.php");
+  await fs.writeFile(php, "<?php");
+  assert.equal(quickLaunch(root, php, settings).mode, "php");
+  assert.equal(
+    quickLaunch(root, html, settings, { ...spec, port: 7777 }).port,
+    7777,
+  );
+  assert.throws(() =>
+    quickLaunch(root, html, { ...settings, entry: "../escape.html" }),
+  );
+});
+test("Lite visibility overrides auxiliary buttons while individual settings remain respected", () => {
+  const { buttonVisibility } = require("../dist/ui/visibility");
+  const settings = {
+    mode: "full",
+    start: true,
+    qr: true,
+    reopen: true,
+    copy: true,
+  };
+  assert.deepEqual(buttonVisibility({ ...settings, mode: "lite" }, true), {
+    start: true,
+    qr: false,
+    reopen: false,
+    copy: false,
+  });
+  assert.deepEqual(buttonVisibility({ ...settings, start: false }, false), {
+    start: false,
+    qr: false,
+    reopen: false,
+    copy: false,
+  });
+  assert.equal(buttonVisibility({ ...settings, qr: false }, true).qr, false);
+});
+test("edit queue coalesces bursts by file, resolves all callers and continues after failures", async () => {
+  const { CoalescingQueue } = require("../dist/core/coalescingQueue");
+  const queue = new CoalescingQueue(10);
+  let writes = 0,
+    last;
+  const work = [];
+  for (let i = 0; i < 100; i++)
+    work.push(
+      queue.enqueue("same", async () => {
+        writes++;
+        last = i;
+      }),
+    );
+  await Promise.all(work);
+  assert.equal(writes, 1);
+  assert.equal(last, 99);
+  const failure = queue.enqueue("fail", async () => {
+    throw new Error("disk failure");
+  });
+  await assert.rejects(failure, /disk failure/);
+  await queue.enqueue("next", async () => {
+    writes++;
+  });
+  assert.equal(writes, 2);
+  await queue.flush();
+});
+test("mirror coalesces unsaved edits and avoids identical buffer rewrites", async (t) => {
+  const root = await fixture(t);
+  const file = path.join(root, "index.php");
+  await fs.writeFile(file, "original");
+  const copy = await mirror(root, () => {});
+  t.after(() => copy.close());
+  const original = fs.writeFile;
+  let writes = 0;
+  fs.writeFile = async function (target, ...args) {
+    if (target === path.join(copy.root, "index.php")) writes++;
+    return original.call(this, target, ...args);
+  };
+  try {
+    await Promise.all(
+      Array.from({ length: 100 }, (_, i) => copy.update(file, "buffer " + i)),
+    );
+    await copy.update(file, "buffer 99");
+    assert.equal(writes, 1);
+    assert.equal(await fs.readFile(file, "utf8"), "original");
+  } finally {
+    fs.writeFile = original;
+  }
+});
+test("framework reload watcher can be disabled and per-request logs are opt-in", async (t) => {
+  const root = await fixture(t);
+  await fs.writeFile(path.join(root, "index.html"), "before");
+  const logs = [];
+  const s = await gateway({
+    ...options(root),
+    watchFiles: false,
+    log: (m) => logs.push(m),
+  });
+  t.after(() => s.close());
+  await (await fetch(s.url)).text();
+  await fs.writeFile(path.join(root, "index.html"), "after");
+  await new Promise((r) => setTimeout(r, 160));
+  assert.equal(
+    logs.some((m) => m.startsWith("Reload:") || m.startsWith("GET ")),
+    false,
+  );
+  const verbose = await gateway({
+    ...options(root),
+    requestLogging: true,
+    watchFiles: false,
+    log: (m) => logs.push(m),
+  });
+  t.after(() => verbose.close());
+  await (await fetch(verbose.url)).text();
+  assert.ok(logs.some((m) => m.startsWith("GET ")));
+});

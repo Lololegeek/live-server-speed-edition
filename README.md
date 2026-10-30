@@ -19,11 +19,19 @@ Detected projects include React, Vue, Angular, Vite, Svelte/SvelteKit, Next, Nux
 
 For framework mode, enter the script name and the URL that the script actually listens on. For example, use a `dev` script configured for `http://127.0.0.1:5173`. The extension checks that this port is free and waits up to 60 seconds for startup. Framework WebSocket upgrades are forwarded so native HMR can work through the preview URL. Use **Attach** if the process already runs.
 
+## Lite mode and visible buttons
+
+Set `liveServerSpeed.interfaceMode` to `lite` for a one-click Start/Stop workflow. The first launch infers the current workspace/file and runtime. HTML opens directly, PHP uses the PHP runtime, and a detected development script uses framework mode. The initial preview uses localhost HTTP and `defaultPreview`; set `upstreamUrl` to your framework's actual address before using its first Lite launch. Subsequent launches reuse that workspace's last parameters. **Configure Server...** opens the full setup at any time, and **Quick Start** is also available in Full mode.
+
+Lite hides auxiliary status buttons. Full mode provides independent `showStartButton`, `showQrButton`, `showReopenButton` and `showCopyUrlButton` settings. They take effect immediately; commands and shortcuts remain available even if all buttons are hidden. Lite is an interface mode in the same extension, not a separate Marketplace package.
+
 ## Live editing and reload
 
 With `liveServerSpeed.liveEditing` enabled (default), changes are sent after editor updates without requiring Save. HTML/JS changes trigger reload, and stylesheet changes replace stylesheet URLs while preserving the page. Scroll position is restored after full reloads when session storage is available. PHP needs actual execution; frameworks need actual compilation. Updates therefore include that runtime's execution/build time and are not guaranteed to be instantaneous.
 
 PHP and framework modes create a temporary copy when started. Changes in the source workspace are synchronized to it, and unsaved editor buffers override their files in that copy. Original files are not overwritten. Stop/restart removes the copy. JavaScript dependencies are linked from installed `node_modules`; PHP `vendor` dependencies are copied so Composer autoload paths stay inside the live copy. Other project symlinks are skipped and logged. Very large projects can take time to copy. Absolute project paths, monorepo packages outside the selected workspace, native addons, custom framework security policies and tools that resolve workspace dependencies through real symlinks may need live editing disabled. PHP applications that write data do so in the temporary copy while this mode is enabled.
+
+Managed frameworks use their own HMR by default (`nativeHmr: true`), avoiding a second full reload watcher that would discard application state. Set it to false for a framework without HMR. HTTP request logging is opt-in (`requestLogging`) to avoid formatting/output work on every asset request. Temporary copies use bounded batches and copy-on-write filesystem copies where supported, with normal copies as a fallback. Pending editor writes are grouped by file; duplicate contents are not written again.
 
 The dedicated **Instant Preview** command opens an unsaved HTML buffer on an ephemeral localhost port. Its CSS and JavaScript editor buffers are also served without saving. This preview preserves normal document structure, resource URLs, module scripts, fonts, images and fetch requests.
 
@@ -43,6 +51,10 @@ HTTPS accepts a configured certificate/key pair or generates a cached self-signe
 
 | Setting (`liveServerSpeed.*`) | Purpose |
 | --- | --- |
+| `interfaceMode` | Full setup or Lite one-click workflow |
+| `showStartButton`, `showQrButton`, `showReopenButton`, `showCopyUrlButton` | Status button visibility |
+| `defaultPreview`, `liteRuntime` | Initial Lite preview and runtime |
+| `nativeHmr`, `requestLogging` | Framework HMR preference and opt-in request logs |
 | `port` | Public preview port, default 5500 |
 | `serverRoot`, `entryFile` | Served directory and entry path, relative to that directory |
 | `liveEditing` | Reflect unsaved editor buffers |
@@ -72,3 +84,7 @@ Tests cover static routing, traversal/symlink protection, WebSockets, watcher cl
 The code is divided into commands, configuration, lifecycle, networking/path validation, static gateway, reload client, proxying, TLS, process supervision, temporary live editing copies and UI modules.
 
 MIT — [Lololegeek](https://github.com/Lololegeek).
+
+### Performance measurement
+
+Run `npm run benchmark` for a synthetic 1,001-file copy and 201 editor updates. It reports elapsed time and actual buffer writes; results depend on the filesystem and computer. Automated tests verify that a burst for one file is coalesced and identical subsequent contents are skipped, without modifying the original file.

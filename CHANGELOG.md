@@ -4,6 +4,15 @@
 
 This release incorporates the existing 1.3.0 work from PR #2 and replaces the duplicated preview implementation with shared modules.
 
+### Lite and performance follow-up
+
+- Full/Lite interface modes, one-click inferred/reused launch parameters and an explicit Configure Server command.
+- Independent Start/Stop, QR, Reopen and Copy URL visibility settings, applied immediately.
+- Per-file editor write coalescing, unchanged-buffer write suppression, bounded project copy batches and filesystem copy-on-write hints.
+- Framework-native HMR by default without a duplicate reload watcher; HTTP request logs are opt-in.
+- Synthetic performance benchmark and additional regression tests.
+- Windows cmd invocation uses verbatim arguments; failed process startup includes recent process output.
+
 ### Added
 
 - PHP CLI runtime with executable PHP responses and reload for PHP/HTML/CSS/JS edits.

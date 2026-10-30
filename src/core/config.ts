@@ -26,6 +26,8 @@ export function config(
     ignored: c.get("ignoredPaths", []),
     extensions: c.get("reloadExtensions", []),
     headers,
+    requestLogging: c.get("requestLogging", false),
+    nativeHmr: c.get("nativeHmr", true),
     log,
     tls: spec.https
       ? certificate(
