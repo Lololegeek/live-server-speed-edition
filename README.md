@@ -67,7 +67,7 @@ HTTPS accepts a configured certificate/key pair or generates a cached self-signe
 | `ignoredPaths`, `reloadExtensions` | Watcher exclusions and file type filters |
 | `headers` | Additional response headers |
 | `httpsCertPath`, `httpsKeyPath` | Custom TLS certificate/key |
-| `language` | Auto/English/French/Spanish/German for existing translated status text |
+| `language` | Auto, English, French, Spanish, German, Italian, Portuguese, Japanese, Chinese, Korean or Russian for translated status text and existing messages. Some setup prompts remain in English. |
 
 Commands include Start/Stop, Restart, Reuse Last Parameters, Instant Preview, Reopen WebView, QR, Copy URL, Detect Web Project, Show Logs and Settings. Last launch parameters persist per workspace. Multiple workspace folders are selected explicitly or inferred from the clicked file. One preview is managed per VS Code window.
 

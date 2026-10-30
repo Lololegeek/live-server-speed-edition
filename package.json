@@ -135,7 +135,13 @@
             "en",
             "fr",
             "es",
-            "de"
+            "de",
+            "it",
+            "pt",
+            "ja",
+            "zh",
+            "ko",
+            "ru"
           ],
           "default": "auto",
           "description": "%liveServerSpeed.language.description%"

@@ -39,7 +39,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     openKeybindingsMessage:
       'In the Keyboard Shortcuts editor, search for "Live Server Speed Edition" to see and modify shortcuts for the extension.',
     newYearMessage: "Happy New Year {year}!",
-    languageDescription: "Language used by the extension (en, fr, es, de)",
+    languageDescription:
+      "Extension language (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
     debounceTimeDescription:
       "Debounce time in milliseconds for file change detection and instant preview updates (50-1000ms)",
     relaunchShortcutDescription:
@@ -97,7 +98,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     openKeybindingsMessage:
       "Dans l'éditeur de raccourcis clavier, recherchez 'Live Server Speed Edition' pour voir et modifier les raccourcis de l'extension.",
     newYearMessage: "Bonne année {year} !",
-    languageDescription: "Langue utilisée par l'extension (en, fr, es, de)",
+    languageDescription:
+      "Langue de l'extension (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
     debounceTimeDescription:
       "Temps de debounce en millisecondes pour la détection des changements de fichiers et les mises à jour de prévisualisation instantanée (50-1000ms)",
     relaunchShortcutDescription:
@@ -154,7 +156,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     openKeybindingsMessage:
       'En el editor de atajos de teclado, busca "Live Server Speed Edition" para ver y modificar los atajos de la extensión.',
     newYearMessage: "¡Feliz Año Nuevo {year}!",
-    languageDescription: "Idioma utilizado por la extensión (en, fr, es, de)",
+    languageDescription:
+      "Idioma de la extensión (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
     debounceTimeDescription:
       "Tiempo de debounce en milisegundos para la detección de cambios de archivos y actualizaciones de vista previa instantánea (50-1000ms)",
     relaunchShortcutDescription:
@@ -211,7 +214,7 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       'Im Tastenkürzeleditor suchen Sie nach "Live Server Speed Edition", um die Tastenkürzel für die Erweiterung anzuzeigen und zu ändern.',
     newYearMessage: "Frohes neues Jahr {year}!",
     languageDescription:
-      "Sprache, die von der Erweiterung verwendet wird (en, fr, es, de)",
+      "Sprache der Erweiterung (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
     debounceTimeDescription:
       "Debounce-Zeit in Millisekunden für die Dateiänderungserkennung und sofortige Vorschau-Updates (50-1000ms)",
     relaunchShortcutDescription:
@@ -225,5 +228,342 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
       "Keine vorherigen Serverparameter gefunden. Bitte führen Sie den Server mindestens einmal aus.",
     fileNotInWorkspace:
       "Die ausgewählte Datei befindet sich nicht im aktuellen Arbeitsbereich.",
+  },
+  it: {
+    start: "$(rocket) Avvia Live Server SE",
+    stop: "$(debug-disconnect) Arresta Live Server SE",
+    startTooltip: "Avvia Live Server SE",
+    stopTooltip: "Arresta Live Server SE",
+    instantPreview: "$(eye) Anteprima istantanea",
+    instantPreviewTooltip: "Mostra l'anteprima del file HTML corrente",
+    qrCode: "Codice QR",
+    qrCodeTooltip: "Mostra il codice QR per accedere al server",
+    reopenWebview: "Riapri WebView",
+    reopenWebviewTooltip: "Riapri l'anteprima WebView",
+    back: "$(arrow-left) Indietro",
+    backTooltip: "Torna al passaggio precedente",
+    scanToAccess: "Scansiona per accedere al server",
+    qrNetworkOnly: "Accessibile solo sulla rete locale",
+    noFolder: "Nessuna cartella aperta in VS Code.",
+    noEditor: "Nessun editor attivo",
+    openHtml: "Apri un file HTML per l'anteprima istantanea",
+    loading: "Caricamento anteprima...",
+    enterPort: "Inserisci la porta del server",
+    invalidPort: "Inserisci un numero di porta valido",
+    selectHtml: "Seleziona il file HTML da aprire",
+    previewInstant: "Anteprima senza server (istantanea)",
+    openDefault: "Apri nel browser predefinito",
+    openWebview: "Apri nella WebView di VS Code (Beta)",
+    howPreview: "Come vuoi visualizzare l'anteprima?",
+    tryAnotherPort: "Prova un'altra porta",
+    cancel: "Annulla",
+    portInUse: "La porta {port} è già in uso. Sceglierne un'altra?",
+    instantPreviewTitle: "Anteprima istantanea",
+    fastHttpServerTitle: "Live Server SE",
+    serverStopped: "Server arrestato.",
+    chooseProtocol:
+      "Scegli il protocollo (HTTPS richiede di accettare il certificato autofirmato)",
+    httpsNotSupportedWebview:
+      "HTTPS non è supportato nella WebView di VS Code a causa delle restrizioni sui certificati autofirmati. Apertura nel browser predefinito.",
+    webviewNotSupportedShort: "(WebView non disponibile)",
+    openKeybindingsMessage:
+      "Nell'editor delle scorciatoie da tastiera, cerca 'Live Server Speed Edition' per visualizzare e modificare le scorciatoie dell'estensione.",
+    newYearMessage: "Buon anno {year}!",
+    languageDescription:
+      "Lingua dell'estensione (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
+    debounceTimeDescription:
+      "Intervallo debounce in millisecondi per rilevare modifiche ai file e aggiornare l'anteprima (50-1000ms)",
+    relaunchShortcutDescription:
+      "Scorciatoia predefinita per riavviare il server con gli ultimi parametri (modificabile in keybindings.json)",
+    openKeybindingsDescription:
+      "Apri le scorciatoie da tastiera di Live Server Speed Edition (imposta true per aprire)",
+    defaultIPDescription:
+      "Indirizzo IP predefinito del server (vuoto per il rilevamento automatico)",
+    christmasMessage: "🎄 Buon Natale! 🎅",
+    openWithLastParams: "Apri con Live Server SE (ultimi parametri)",
+    openWithNewParams: "Apri con Live Server SE (scegli parametri...)",
+    noLastParams:
+      "Nessun parametro del server precedente. Avvia il server almeno una volta.",
+    fileNotInWorkspace:
+      "Il file selezionato non si trova nell'area di lavoro corrente.",
+  },
+  pt: {
+    start: "$(rocket) Iniciar Live Server SE",
+    stop: "$(debug-disconnect) Parar Live Server SE",
+    startTooltip: "Iniciar Live Server SE",
+    stopTooltip: "Parar Live Server SE",
+    instantPreview: "$(eye) Pré-visualização instantânea",
+    instantPreviewTooltip: "Mostrar pré-visualização do arquivo HTML atual",
+    qrCode: "Código QR",
+    qrCodeTooltip: "Mostrar código QR para acessar o servidor",
+    reopenWebview: "Reabrir WebView",
+    reopenWebviewTooltip: "Reabrir a pré-visualização WebView",
+    back: "$(arrow-left) Voltar",
+    backTooltip: "Voltar à etapa anterior",
+    scanToAccess: "Escaneie para acessar o servidor",
+    qrNetworkOnly: "Acessível somente na rede local",
+    noFolder: "Nenhuma pasta aberta no VS Code.",
+    noEditor: "Nenhum editor ativo",
+    openHtml: "Abra um arquivo HTML para a pré-visualização instantânea",
+    loading: "Carregando pré-visualização...",
+    enterPort: "Digite a porta do servidor",
+    invalidPort: "Digite um número de porta válido",
+    selectHtml: "Selecione o arquivo HTML para abrir",
+    previewInstant: "Pré-visualizar sem servidor (instantâneo)",
+    openDefault: "Abrir no navegador padrão",
+    openWebview: "Abrir no WebView do VS Code (Beta)",
+    howPreview: "Como deseja visualizar?",
+    tryAnotherPort: "Tentar outra porta",
+    cancel: "Cancelar",
+    portInUse: "A porta {port} já está em uso. Escolher outra?",
+    instantPreviewTitle: "Pré-visualização instantânea",
+    fastHttpServerTitle: "Live Server SE",
+    serverStopped: "Servidor parado.",
+    chooseProtocol:
+      "Escolha o protocolo (HTTPS exige aceitar o certificado autoassinado)",
+    httpsNotSupportedWebview:
+      "HTTPS não é compatível com o WebView do VS Code devido às restrições de certificados autoassinados. Abrindo no navegador padrão.",
+    webviewNotSupportedShort: "(WebView indisponível)",
+    openKeybindingsMessage:
+      'No editor de atalhos de teclado, pesquise "Live Server Speed Edition" para ver e alterar os atalhos da extensão.',
+    newYearMessage: "Feliz Ano Novo {year}!",
+    languageDescription:
+      "Idioma da extensão (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
+    debounceTimeDescription:
+      "Intervalo de debounce em milissegundos para detectar alterações e atualizar a pré-visualização (50-1000ms)",
+    relaunchShortcutDescription:
+      "Atalho padrão para reiniciar o servidor com os últimos parâmetros (pode ser alterado em keybindings.json)",
+    openKeybindingsDescription:
+      "Abrir os atalhos de teclado do Live Server Speed Edition (defina true para abrir)",
+    defaultIPDescription:
+      "Endereço IP padrão do servidor (vazio para detecção automática)",
+    christmasMessage: "🎄 Feliz Natal! 🎅",
+    openWithLastParams: "Abrir com Live Server SE (últimos parâmetros)",
+    openWithNewParams: "Abrir com Live Server SE (escolher parâmetros...)",
+    noLastParams:
+      "Nenhum parâmetro anterior do servidor. Inicie o servidor pelo menos uma vez.",
+    fileNotInWorkspace:
+      "O arquivo selecionado não está no espaço de trabalho atual.",
+  },
+  ja: {
+    start: "$(rocket) Live Server SE を起動",
+    stop: "$(debug-disconnect) Live Server SE を停止",
+    startTooltip: "Live Server SE を起動",
+    stopTooltip: "Live Server SE を停止",
+    instantPreview: "$(eye) インスタントプレビュー",
+    instantPreviewTooltip: "現在の HTML ファイルをプレビュー",
+    qrCode: "QR コード",
+    qrCodeTooltip: "サーバー接続用の QR コードを表示",
+    reopenWebview: "WebView を再度開く",
+    reopenWebviewTooltip: "WebView プレビューを再度開く",
+    back: "$(arrow-left) 戻る",
+    backTooltip: "前の手順に戻る",
+    scanToAccess: "スキャンしてサーバーに接続",
+    qrNetworkOnly: "ローカルネットワーク内でのみアクセス可能",
+    noFolder: "VS Code でフォルダーが開かれていません。",
+    noEditor: "アクティブなエディターがありません",
+    openHtml: "インスタントプレビューには HTML ファイルを開いてください",
+    loading: "プレビューを読み込み中...",
+    enterPort: "サーバーのポート番号を入力",
+    invalidPort: "有効なポート番号を入力してください",
+    selectHtml: "開く HTML ファイルを選択",
+    previewInstant: "サーバーなしでプレビュー (インスタント)",
+    openDefault: "既定のブラウザーで開く",
+    openWebview: "VS Code WebView で開く (ベータ)",
+    howPreview: "プレビュー方法を選択",
+    tryAnotherPort: "別のポートを試す",
+    cancel: "キャンセル",
+    portInUse: "ポート {port} は使用中です。別のポートを選びますか？",
+    instantPreviewTitle: "インスタントプレビュー",
+    fastHttpServerTitle: "Live Server SE",
+    serverStopped: "サーバーを停止しました。",
+    chooseProtocol:
+      "プロトコルを選択 (HTTPS では自己署名証明書の承認が必要です)",
+    httpsNotSupportedWebview:
+      "自己署名証明書の制限により VS Code WebView は HTTPS をサポートしていません。既定のブラウザーで開きます。",
+    webviewNotSupportedShort: "(WebView は利用できません)",
+    openKeybindingsMessage:
+      "キーボードショートカットの設定で「Live Server Speed Edition」を検索すると、拡張機能のショートカットを確認・変更できます。",
+    newYearMessage: "{year}年、明けましておめでとうございます！",
+    languageDescription:
+      "拡張機能の言語 (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
+    debounceTimeDescription:
+      "ファイル変更の検出とプレビュー更新までの待ち時間 (50～1000ms)",
+    relaunchShortcutDescription:
+      "前回の設定でサーバーを再起動する既定のショートカット (keybindings.json で変更可能)",
+    openKeybindingsDescription:
+      "Live Server Speed Edition のキーボードショートカットを開く (true で開く)",
+    defaultIPDescription: "サーバーの既定 IP アドレス (空欄で自動検出)",
+    christmasMessage: "🎄 メリークリスマス！ 🎅",
+    openWithLastParams: "Live Server SE で開く (前回の設定)",
+    openWithNewParams: "Live Server SE で開く (設定を選択...)",
+    noLastParams:
+      "前回のサーバー設定がありません。最初にサーバーを起動してください。",
+    fileNotInWorkspace: "選択したファイルは現在のワークスペースにありません。",
+  },
+  zh: {
+    start: "$(rocket) 启动 Live Server SE",
+    stop: "$(debug-disconnect) 停止 Live Server SE",
+    startTooltip: "启动 Live Server SE",
+    stopTooltip: "停止 Live Server SE",
+    instantPreview: "$(eye) 即时预览",
+    instantPreviewTooltip: "显示当前 HTML 文件的即时预览",
+    qrCode: "二维码",
+    qrCodeTooltip: "显示服务器访问二维码",
+    reopenWebview: "重新打开 WebView",
+    reopenWebviewTooltip: "重新打开 WebView 预览",
+    back: "$(arrow-left) 返回",
+    backTooltip: "返回上一步",
+    scanToAccess: "扫码访问服务器",
+    qrNetworkOnly: "仅可通过本地网络访问",
+    noFolder: "VS Code 中没有打开文件夹。",
+    noEditor: "没有活动的编辑器",
+    openHtml: "请打开 HTML 文件以使用即时预览",
+    loading: "正在加载预览...",
+    enterPort: "输入服务器端口",
+    invalidPort: "请输入有效的端口号",
+    selectHtml: "选择要打开的 HTML 文件",
+    previewInstant: "无需服务器预览 (即时)",
+    openDefault: "在默认浏览器中打开",
+    openWebview: "在 VS Code WebView 中打开 (测试版)",
+    howPreview: "选择预览方式",
+    tryAnotherPort: "尝试其他端口",
+    cancel: "取消",
+    portInUse: "端口 {port} 已被占用。要选择其他端口吗？",
+    instantPreviewTitle: "即时预览",
+    fastHttpServerTitle: "Live Server SE",
+    serverStopped: "服务器已停止。",
+    chooseProtocol: "选择协议 (HTTPS 需要接受自签名证书)",
+    httpsNotSupportedWebview:
+      "由于自签名证书限制，VS Code WebView 不支持 HTTPS。将改用默认浏览器打开。",
+    webviewNotSupportedShort: "(WebView 不可用)",
+    openKeybindingsMessage:
+      "在键盘快捷方式编辑器中搜索“Live Server Speed Edition”，即可查看和修改扩展快捷键。",
+    newYearMessage: "{year} 新年快乐！",
+    languageDescription:
+      "扩展使用的语言 (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
+    debounceTimeDescription:
+      "检测文件变化并更新即时预览的防抖时间 (50-1000 毫秒)",
+    relaunchShortcutDescription:
+      "使用上次参数重启服务器的默认快捷键 (可在 keybindings.json 中修改)",
+    openKeybindingsDescription:
+      "打开 Live Server Speed Edition 的键盘快捷方式 (设为 true 时打开)",
+    defaultIPDescription: "服务器默认 IP 地址 (留空则自动检测)",
+    christmasMessage: "🎄 圣诞快乐！ 🎅",
+    openWithLastParams: "使用 Live Server SE 打开 (上次参数)",
+    openWithNewParams: "使用 Live Server SE 打开 (选择参数...)",
+    noLastParams: "未找到上次的服务器参数。请先启动一次服务器。",
+    fileNotInWorkspace: "所选文件不在当前工作区中。",
+  },
+  ko: {
+    start: "$(rocket) Live Server SE 시작",
+    stop: "$(debug-disconnect) Live Server SE 중지",
+    startTooltip: "Live Server SE 시작",
+    stopTooltip: "Live Server SE 중지",
+    instantPreview: "$(eye) 즉시 미리 보기",
+    instantPreviewTooltip: "현재 HTML 파일 미리 보기",
+    qrCode: "QR 코드",
+    qrCodeTooltip: "서버 접속용 QR 코드 표시",
+    reopenWebview: "WebView 다시 열기",
+    reopenWebviewTooltip: "WebView 미리 보기 다시 열기",
+    back: "$(arrow-left) 뒤로",
+    backTooltip: "이전 단계로 돌아가기",
+    scanToAccess: "스캔하여 서버에 접속",
+    qrNetworkOnly: "로컬 네트워크에서만 접속 가능",
+    noFolder: "VS Code에서 열린 폴더가 없습니다.",
+    noEditor: "활성 편집기가 없습니다",
+    openHtml: "즉시 미리 보려면 HTML 파일을 여세요",
+    loading: "미리 보기 로드 중...",
+    enterPort: "서버 포트 번호 입력",
+    invalidPort: "올바른 포트 번호를 입력하세요",
+    selectHtml: "열 HTML 파일 선택",
+    previewInstant: "서버 없이 미리 보기 (즉시)",
+    openDefault: "기본 브라우저에서 열기",
+    openWebview: "VS Code WebView에서 열기 (베타)",
+    howPreview: "미리 보기 방법 선택",
+    tryAnotherPort: "다른 포트 사용",
+    cancel: "취소",
+    portInUse: "포트 {port}이(가) 이미 사용 중입니다. 다른 포트를 선택할까요?",
+    instantPreviewTitle: "즉시 미리 보기",
+    fastHttpServerTitle: "Live Server SE",
+    serverStopped: "서버가 중지되었습니다.",
+    chooseProtocol: "프로토콜 선택 (HTTPS는 자체 서명 인증서 수락 필요)",
+    httpsNotSupportedWebview:
+      "자체 서명 인증서 제한으로 VS Code WebView에서 HTTPS를 지원하지 않습니다. 기본 브라우저에서 엽니다.",
+    webviewNotSupportedShort: "(WebView를 사용할 수 없음)",
+    openKeybindingsMessage:
+      "키보드 바로 가기 편집기에서 'Live Server Speed Edition'을 검색해 확장 바로 가기를 확인하고 수정하세요.",
+    newYearMessage: "새해 복 많이 받으세요, {year}년!",
+    languageDescription:
+      "확장 언어 (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
+    debounceTimeDescription:
+      "파일 변경 감지 및 미리 보기 갱신 대기 시간 (50-1000ms)",
+    relaunchShortcutDescription:
+      "마지막 설정으로 서버를 다시 시작하는 기본 바로 가기 (keybindings.json에서 변경 가능)",
+    openKeybindingsDescription:
+      "Live Server Speed Edition 키보드 바로 가기 열기 (true로 설정하면 열림)",
+    defaultIPDescription: "서버 기본 IP 주소 (비우면 자동 검색)",
+    christmasMessage: "🎄 메리 크리스마스! 🎅",
+    openWithLastParams: "Live Server SE로 열기 (마지막 설정)",
+    openWithNewParams: "Live Server SE로 열기 (설정 선택...)",
+    noLastParams: "이전 서버 설정이 없습니다. 서버를 한 번 실행하세요.",
+    fileNotInWorkspace: "선택한 파일이 현재 작업 영역에 없습니다.",
+  },
+  ru: {
+    start: "$(rocket) Запустить Live Server SE",
+    stop: "$(debug-disconnect) Остановить Live Server SE",
+    startTooltip: "Запустить Live Server SE",
+    stopTooltip: "Остановить Live Server SE",
+    instantPreview: "$(eye) Мгновенный предпросмотр",
+    instantPreviewTooltip: "Показать предпросмотр текущего HTML-файла",
+    qrCode: "QR-код",
+    qrCodeTooltip: "Показать QR-код для доступа к серверу",
+    reopenWebview: "Открыть WebView заново",
+    reopenWebviewTooltip: "Открыть предпросмотр WebView заново",
+    back: "$(arrow-left) Назад",
+    backTooltip: "Вернуться к предыдущему шагу",
+    scanToAccess: "Сканируйте, чтобы открыть сервер",
+    qrNetworkOnly: "Доступен только в локальной сети",
+    noFolder: "В VS Code не открыта папка.",
+    noEditor: "Нет активного редактора",
+    openHtml: "Откройте HTML-файл для мгновенного предпросмотра",
+    loading: "Загрузка предпросмотра...",
+    enterPort: "Введите порт сервера",
+    invalidPort: "Введите допустимый номер порта",
+    selectHtml: "Выберите HTML-файл",
+    previewInstant: "Предпросмотр без сервера (мгновенно)",
+    openDefault: "Открыть в браузере по умолчанию",
+    openWebview: "Открыть в WebView VS Code (бета)",
+    howPreview: "Как открыть предпросмотр?",
+    tryAnotherPort: "Попробовать другой порт",
+    cancel: "Отмена",
+    portInUse: "Порт {port} уже занят. Выбрать другой?",
+    instantPreviewTitle: "Мгновенный предпросмотр",
+    fastHttpServerTitle: "Live Server SE",
+    serverStopped: "Сервер остановлен.",
+    chooseProtocol:
+      "Выберите протокол (для HTTPS нужно принять самоподписанный сертификат)",
+    httpsNotSupportedWebview:
+      "HTTPS не поддерживается в WebView VS Code из-за ограничений самоподписанных сертификатов. Открываем в браузере по умолчанию.",
+    webviewNotSupportedShort: "(WebView недоступен)",
+    openKeybindingsMessage:
+      "Найдите «Live Server Speed Edition» в редакторе сочетаний клавиш, чтобы просмотреть и изменить сочетания расширения.",
+    newYearMessage: "С Новым {year} годом!",
+    languageDescription:
+      "Язык расширения (auto, en, fr, es, de, it, pt, ja, zh, ko, ru)",
+    debounceTimeDescription:
+      "Задержка обнаружения изменений файлов и обновления предпросмотра (50–1000 мс)",
+    relaunchShortcutDescription:
+      "Сочетание клавиш для перезапуска сервера с последними параметрами (можно изменить в keybindings.json)",
+    openKeybindingsDescription:
+      "Открыть сочетания клавиш Live Server Speed Edition (установите true)",
+    defaultIPDescription:
+      "IP-адрес сервера по умолчанию (пусто — определить автоматически)",
+    christmasMessage: "🎄 С Рождеством! 🎅",
+    openWithLastParams: "Открыть в Live Server SE (последние параметры)",
+    openWithNewParams: "Открыть в Live Server SE (выбрать параметры...)",
+    noLastParams:
+      "Предыдущие параметры сервера не найдены. Сначала запустите сервер.",
+    fileNotInWorkspace: "Выбранный файл находится вне текущей рабочей области.",
   },
 };

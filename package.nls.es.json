@@ -1,5 +1,5 @@
 {
-  "liveServerSpeed.language.description": "Idioma de los textos traducidos; los nuevos diálogos utilizan inglés.",
+  "liveServerSpeed.language.description": "Idioma de la extensión para la barra de estado y los textos traducidos (auto, en, fr, es, de, it, pt, ja, zh, ko, ru). Algunos diálogos de configuración siguen en inglés.",
   "liveServerSpeed.debounceTime.description": "Tiempo de debounce en milisegundos para la detección de cambios de archivos y actualizaciones de vista previa instantánea (50-1000ms)",
   "liveServerSpeed.relaunchShortcut.description": "Atajo de teclado predeterminado para relanzar el servidor con los últimos parámetros (el usuario puede anularlo en keybindings.json)",
   "liveServerSpeed.openKeybindings.description": "Abrir Atajos de Teclado para Live Server Speed Edition (establecer en true para abrir)",

@@ -1,5 +1,5 @@
 {
-  "liveServerSpeed.language.description": "Sprache der übersetzten Texte; neue Startdialoge verwenden derzeit Englisch.",
+  "liveServerSpeed.language.description": "Sprache der Erweiterung für Statusleiste und übersetzte Texte (auto, en, fr, es, de, it, pt, ja, zh, ko, ru). Einige Einrichtungsdialoge sind weiterhin auf Englisch.",
   "liveServerSpeed.debounceTime.description": "Debounce-Zeit in Millisekunden für die Dateiänderungserkennung und sofortige Vorschau-Updates (50-1000ms)",
   "liveServerSpeed.relaunchShortcut.description": "Standard-Tastenkürzel zum Neustarten des Servers mit den letzten Parametern (Benutzer kann es in keybindings.json überschreiben)",
   "liveServerSpeed.openKeybindings.description": "Tastenkürzel für Live Server Speed Edition öffnen (auf true setzen, um zu öffnen)",
