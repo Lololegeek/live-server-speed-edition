@@ -12,7 +12,7 @@ export async function mirror(
   options: { signal?: AbortSignal; delay?: number } = {},
 ) {
   const temporary = await fs.promises.mkdtemp(
-    path.join(os.tmpdir(), "live-server-se-"),
+    path.join(fs.realpathSync.native(os.tmpdir()), "live-server-se-"),
   );
   const destination = path.join(temporary, "project");
   const dirty = new Map<string, string>(),
