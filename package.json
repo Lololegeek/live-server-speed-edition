@@ -239,7 +239,7 @@
     "vscode:prepublish": "npm run bundle",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node --test test/*.test.cjs",
+    "test": "npm run compile && node --test test/extension.test.cjs test/server.test.cjs",
     "check": "tsc -p . --noEmit",
     "package": "vsce package --no-dependencies",
     "bundle": "npm run compile && esbuild src/extension.ts --bundle --platform=node --target=node18 --external:vscode --external:fsevents --outfile=dist/extension.js"
