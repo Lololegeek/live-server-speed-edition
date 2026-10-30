@@ -9,3 +9,16 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+test/**
+.github/**
+*.vsix
+TODO.md
+IDEAS.md
+setupinyourpc.md
+package-lock.json
+
+node_modules/**
+dist/**
+!dist/extension.js
+*.gif
