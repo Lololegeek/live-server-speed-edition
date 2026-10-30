@@ -2,7 +2,7 @@
   "name": "live-server-speed-edition",
   "displayName": "Live Server Speed Edition",
   "description": "Preview your local web project inside a VS Code WebView or Default Browser with live reload.",
-  "version": "1.2.9",
+  "version": "1.3.0",
   "keywords": [
     "live server",
     "live preview",
@@ -81,6 +81,18 @@
         "title": "Open Extension Settings"
       },
       {
+        "command": "fast-http-server.restartServer",
+        "title": "Restart Live Server"
+      },
+      {
+        "command": "fast-http-server.showLogs",
+        "title": "Show Live Server Logs"
+      },
+      {
+        "command": "fast-http-server.detectProject",
+        "title": "Detect Web Project"
+      },
+      {
         "command": "fast-http-server.goBack",
         "title": "Go Back (Setup)"
       },
@@ -141,6 +153,54 @@
           "type": "boolean",
           "default": false,
           "description": "%liveServerSpeed.openKeybindings.description%"
+        },
+        "liveServerSpeed.bindAddress": {
+          "type": "string",
+          "default": "0.0.0.0",
+          "description": "Address used by the local server. Use 0.0.0.0 for access from phones and other devices."
+        },
+        "liveServerSpeed.serverRoot": {
+          "type": "string",
+          "default": "",
+          "description": "Optional folder to serve instead of the workspace root. Relative paths are resolved from the workspace."
+        },
+        "liveServerSpeed.entryFile": {
+          "type": "string",
+          "default": "",
+          "description": "Default HTML entry file. Leave empty to detect index.html or a framework build output."
+        },
+        "liveServerSpeed.openBrowserAutomatically": {
+          "type": "boolean",
+          "default": false,
+          "description": "Open the default browser automatically when the server starts."
+        },
+        "liveServerSpeed.spaFallback": {
+          "type": "boolean",
+          "default": true,
+          "description": "Serve index.html for extension-less routes used by React, Vue, Angular and other SPAs."
+        },
+        "liveServerSpeed.usePolling": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use polling for file watching. Enable this only when native file events do not work."
+        },
+        "liveServerSpeed.ignoredPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Additional glob patterns ignored by the file watcher."
+        },
+        "liveServerSpeed.reloadExtensions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Only reload for these file extensions, for example .html, .css and .js. Leave empty for all files."
+        },
+        "liveServerSpeed.frameworkMode": {
+          "type": "string",
+          "enum": ["auto", "static"],
+          "default": "auto",
+          "description": "Framework handling mode. Auto detects Vite, React, Vue, Angular, Svelte, Next and Nuxt projects."
         }
       }
     }

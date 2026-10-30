@@ -172,3 +172,19 @@
 ### Fixed
 
 - All prompts and choices now respect the selected language.
+## [1.3.0] - 2026-08-18
+
+### Added
+
+- Reliable live reload for LAN and mobile previews by connecting to the current page host instead of hardcoded `localhost`.
+- Dedicated **Live Server Speed Edition** Output channel with HTTP requests, watcher events, reloads, warnings and errors.
+- Restart command that reuses the last server parameters.
+- Advanced settings for bind address, custom server root, entry-file preference, SPA fallback, watcher polling, ignored paths and reload extensions.
+- SPA fallback for extension-less client-side routes.
+- Project detection for React, Vue, Angular, Vite, Svelte, Next, Nuxt and static projects, including package manager, build folder and dev script hints.
+
+### Improved
+
+- File watching now uses native filesystem events by default; polling remains available as a compatibility setting.
+- Safer path handling prevents requests from escaping the served folder.
+- Version and roadmap documentation updated for the 1.3.0 feature set.
