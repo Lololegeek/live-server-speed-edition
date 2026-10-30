@@ -34,7 +34,10 @@ export class Controller implements vscode.Disposable {
     vscode.StatusBarAlignment.Left,
     99,
   );
-  constructor(private context: vscode.ExtensionContext) {
+  constructor(
+    private context: vscode.ExtensionContext,
+    private visible = true,
+  ) {
     this.status.command = "fast-http-server.toggleServer";
     this.qr.command = "fast-http-server.showQr";
     this.qr.text = "$(qr-code)";
@@ -57,6 +60,10 @@ export class Controller implements vscode.Disposable {
   }
   get last() {
     return this.spec || this.context.workspaceState.get<Launch>("lastLaunch");
+  }
+  setVisible(visible: boolean) {
+    this.visible = visible;
+    this.render();
   }
   render() {
     this.status.text = this.busy
@@ -82,7 +89,8 @@ export class Controller implements vscode.Disposable {
       reopen: this.reopenButton,
       copy: this.copyButton,
     })) {
-      if (visibility[name as keyof typeof visibility]) item.show();
+      if (this.visible && visibility[name as keyof typeof visibility])
+        item.show();
       else item.hide();
     }
   }
@@ -98,10 +106,27 @@ export class Controller implements vscode.Disposable {
       await this.stop();
       this.spec = spec;
       this.startup = new AbortController();
-      this.running = await launch(spec, {
-        ...config(spec, this.context, this.log),
-        signal: this.startup.signal,
-      });
+      this.running = await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "Live Server SE: preparing preview",
+          cancellable: true,
+        },
+        async (progress, token) => {
+          const cancel = token.onCancellationRequested(() =>
+            this.startup?.abort(),
+          );
+          progress.report({ message: spec.mode });
+          try {
+            return await launch(spec, {
+              ...config(spec, this.context, this.log),
+              signal: this.startup!.signal,
+            });
+          } finally {
+            cancel.dispose();
+          }
+        },
+      );
       if (this.startup.signal.aborted) throw new Error("Startup cancelled");
       if (spec.instant && this.running.update)
         for (const doc of vscode.workspace.textDocuments)
@@ -159,7 +184,10 @@ export class Controller implements vscode.Disposable {
       !inside(this.running?.update ? this.spec.workspace : this.spec.root, file)
     )
       return;
-    if (this.running?.update) void this.running.update(file, content);
+    if (this.running?.update)
+      void this.running
+        .update(file, content)
+        .catch((error) => this.log(String(error)));
     else {
       if (this.editTimer) clearTimeout(this.editTimer);
       this.editPaths.add(file);

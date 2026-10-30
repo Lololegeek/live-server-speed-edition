@@ -39,8 +39,7 @@ export function safePath(root: string, request: string): string | null {
   return candidate;
 }
 export function entryUrl(base: string, entry: string): string {
-  return new URL(
-    entry.split(/[\\/]/).map(encodeURIComponent).join("/"),
-    base + "/",
-  ).href;
+  const url = new URL(base);
+  url.pathname = "/" + entry.split(/[\\/]/).map(encodeURIComponent).join("/");
+  return url.href;
 }

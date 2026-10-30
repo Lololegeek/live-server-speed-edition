@@ -11,7 +11,13 @@ export async function freePort(): Promise<number> {
   });
 }
 export function networkAddresses(): string[] {
-  return Object.values(os.networkInterfaces()).flatMap((items) =>
+  let interfaces: ReturnType<typeof os.networkInterfaces>;
+  try {
+    interfaces = os.networkInterfaces();
+  } catch {
+    return [];
+  }
+  return Object.values(interfaces).flatMap((items) =>
     (items || [])
       .filter((i) => i.family === "IPv4" && !i.internal)
       .map((i) => i.address),

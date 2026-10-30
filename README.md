@@ -67,7 +67,7 @@ HTTPS accepts a configured certificate/key pair or generates a cached self-signe
 | `ignoredPaths`, `reloadExtensions` | Watcher exclusions and file type filters |
 | `headers` | Additional response headers |
 | `httpsCertPath`, `httpsKeyPath` | Custom TLS certificate/key |
-| `language` | Auto, English, French, Spanish, German, Italian, Portuguese, Japanese, Chinese, Korean or Russian for translated status text and existing messages. Some setup prompts remain in English. |
+| `language` | Auto, English, French, Spanish, German, Italian, Portuguese, Japanese, Chinese, Korean or Russian for translated status text and existing messages. Some runtime diagnostics and management controls remain in English. |
 
 Commands include Start/Stop, Restart, Reuse Last Parameters, Instant Preview, Reopen WebView, QR, Copy URL, Detect Web Project, Show Logs and Settings. Last launch parameters persist per workspace. Multiple workspace folders are selected explicitly or inferred from the clicked file. One preview is managed per VS Code window.
 
@@ -88,3 +88,27 @@ MIT — [Lololegeek](https://github.com/Lololegeek).
 ### Performance measurement
 
 Run `npm run benchmark` for a synthetic 1,001-file copy and 201 editor updates. It reports elapsed time and actual buffer writes; results depend on the filesystem and computer. Automated tests verify that a burst for one file is coalesced and identical subsequent contents are skipped, without modifying the original file.
+
+## Sessions, profiles and responsive previews
+
+Use **Live Server: Save Launch Profile** after configuring a server. **Launch Profile** restores its runtime, root, port, network access and preview destination. Profiles are stored in VS Code workspace state; **Delete Launch Profile** removes one. Configure different ports to run multiple servers simultaneously. **Manage Server Sessions** selects a server and offers preview, logs, stop, restart and URL actions; **Stop All Servers** closes every session. Status buttons operate on the selected session. Edits are forwarded to every matching active session.
+
+The configuration wizard has Back buttons and remembers values while navigating. Its first step accepts a project subfolder, enabling package selection in monorepos. Install dependencies and select a distinct development port for each framework package. Wizard labels support all ten extension languages; some runtime diagnostics and newer management controls remain in English.
+
+WebView previews include phone/tablet/desktop sizes, custom width/height, rotation and reload. These resize the CSS viewport; they do not emulate mobile browser engines, touch hardware or device pixel ratios.
+
+Enable `liveServerSpeed.browserConsole` before launch to forward console log/info/warn/error and uncaught JavaScript errors to the session's Output channel. Delivery requires the injected client and its WebSocket connection; CSP restrictions can prevent it. Messages are truncated to 4,000 characters and limited to 20 per second per connection. HTTP failures are logged automatically; full request logging remains optional.
+
+LAN previews require the private URL or QR code by default (`protectLAN`). Opening it exchanges a random per-session token for an HttpOnly session cookie. Restarting invalidates the old access URL. Use HTTPS for encrypted LAN traffic. HTTP cookies can be blocked in cross-site WebView iframes; open the private URL in a browser when this occurs. The token is a bearer credential: anyone with it can access that session. Localhost-only previews do not require this token.
+
+HTTP API prefixes can target local backends, forwarding methods, request bodies and queries without HTML injection:
+
+```json
+"liveServerSpeed.apiProxy": [
+  { "prefix": "/api", "target": "http://127.0.0.1:3000", "stripPrefix": true }
+]
+```
+
+Here `/api/users?q=1` reaches `/users?q=1`. The longest matching path prefix wins. Targets must be localhost HTTP/HTTPS origins without a path. API WebSocket route forwarding is not included; framework HMR forwarding remains available. Restart affected sessions after changing server settings.
+
+Use **Select Injected CSS/JS Files** to choose additional workspace files for preview-only styles/scripts; **Clear Injected CSS/JS Files** removes the selection. Restart affected sessions to apply it. Original page files are not modified. The existing CSP is preserved, so restrictive policies can block injection.

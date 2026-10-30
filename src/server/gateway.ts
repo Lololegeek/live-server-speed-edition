@@ -1,4 +1,6 @@
 import express from "express";
+import { access } from "./access";
+import { apiRoutes, ApiRoute } from "./apiRoutes";
 import * as http from "http";
 import * as https from "https";
 import * as fs from "fs";
@@ -14,6 +16,10 @@ import { proxyRequest } from "./proxy";
 import { watch } from "./watcher";
 export interface GatewayOptions {
   root: string;
+  protectLAN?: boolean;
+  injectedFiles?: string[];
+  browserConsole?: boolean;
+  apiProxy?: ApiRoute[];
   port: number;
   host: string;
   media: string;
@@ -35,6 +41,15 @@ export async function gateway(o: GatewayOptions): Promise<Running> {
   const root = fs.realpathSync(o.root),
     app = express();
   app.disable("x-powered-by");
+  const guard = access(
+    o.protectLAN === true &&
+      !["127.0.0.1", "localhost", "::1"].includes(o.host),
+    Boolean(o.tls),
+  );
+  const routes = apiRoutes(o.apiProxy || []);
+  app.use((req, res, next) => {
+    if (guard.handle(req, res)) next();
+  });
   const server = o.tls
     ? https.createServer(o.tls, app)
     : http.createServer(app);
@@ -43,10 +58,28 @@ export async function gateway(o: GatewayOptions): Promise<Running> {
     sockets.add(socket);
     socket.on("close", () => sockets.delete(socket));
   });
-  const ws = new WebSocketServer({ noServer: true });
+  const ws = new WebSocketServer({ noServer: true, maxPayload: 16384 });
   const hmr = httpProxy.createProxyServer({ ws: true });
   hmr.on("error", (error) => o.log("HMR proxy: " + error));
   server.on("upgrade", (req, socket, head) => {
+    if (!guard.authorized(req)) {
+      socket.destroy();
+      return;
+    }
+    if (
+      (req.url || "").split("?")[0] === "/__live_server_se/ws" &&
+      req.headers.origin
+    ) {
+      try {
+        if (new URL(req.headers.origin).host !== req.headers.host) {
+          socket.destroy();
+          return;
+        }
+      } catch {
+        socket.destroy();
+        return;
+      }
+    }
     if ((req.url || "").split("?")[0] === "/__live_server_se/ws")
       ws.handleUpgrade(req, socket, head, (client) =>
         ws.emit("connection", client, req),
@@ -71,21 +104,77 @@ export async function gateway(o: GatewayOptions): Promise<Running> {
       (client as any).alive = true;
     });
     client.on("error", (e) => o.log("WebSocket: " + e));
+    let count = 0,
+      start = Date.now();
+    client.on("message", (raw) => {
+      if (!o.browserConsole) return;
+      if (Date.now() - start > 1000) {
+        start = Date.now();
+        count = 0;
+      }
+      if (++count > 20) return;
+      try {
+        const event = JSON.parse(String(raw));
+        if (
+          event.type === "console" &&
+          ["log", "warn", "error", "info"].includes(event.level)
+        )
+          o.log(
+            `[Browser ${event.level}] ${String(event.message)
+              .slice(0, 4000)
+              .replace(/[\r\n]/g, " ")}`,
+          );
+      } catch {}
+    });
   });
   app.use((req, res, next) => {
     for (const [key, value] of Object.entries(o.headers))
       res.setHeader(key, value);
-    if (o.requestLogging)
-      res.on("finish", () =>
-        o.log(req.method + " " + req.url + " " + res.statusCode),
-      );
+    res.on("finish", () => {
+      if (o.requestLogging || res.statusCode >= 400)
+        o.log(req.method + " " + req.path + " " + res.statusCode);
+    });
     next();
+  });
+  app.get("/__live_server_se/injected/:index", (req, res) => {
+    const file = (o.injectedFiles || [])[Number(req.params.index)];
+    if (!file || !/^\d+$/.test(req.params.index)) {
+      res.status(404).end();
+      return;
+    }
+    res.type(path.extname(file)).setHeader("Cache-Control", "no-store");
+    const overlay = o.readFile?.(file);
+    if (overlay !== undefined) res.send(overlay);
+    else res.sendFile(file);
   });
   app.get("/__live_server_se/client.js", (_req, res) => {
     res.type("application/javascript").setHeader("Cache-Control", "no-store");
-    res.sendFile(path.join(o.media, "reload.js"));
+    const files = (o.injectedFiles || []).map((file, index) => ({
+      url: "/__live_server_se/injected/" + index,
+      css: /\.css$/i.test(file),
+    }));
+    const bootstrap =
+      "window.__liveServerSEConsole=" +
+      Boolean(o.browserConsole) +
+      ";" +
+      JSON.stringify(files) +
+      `.forEach(f=>{const e=document.createElement(f.css?'link':'script');if(f.css){e.rel='stylesheet';e.href=f.url;}else{e.src=f.url;e.async=false;}document.head.appendChild(e);});\n`;
+    res.send(
+      bootstrap + fs.readFileSync(path.join(o.media, "reload.js"), "utf8"),
+    );
   });
   app.use((req, res, next) => {
+    const route = routes.find(
+      (r) => req.path === r.prefix || req.path.startsWith(r.prefix + "/"),
+    );
+    if (route) {
+      if (route.stripPrefix) {
+        const rest = req.url.slice(route.prefix.length);
+        req.url = rest.startsWith("/") ? rest : "/" + rest;
+      }
+      proxyRequest(route.target, req, res, o.log, false);
+      return;
+    }
     if (o.upstream && !o.protectFiles) {
       proxyRequest(o.upstream, req, res, o.log);
       return;
@@ -205,7 +294,7 @@ export async function gateway(o: GatewayOptions): Promise<Running> {
   };
   return {
     reload,
-    url: `http${o.tls ? "s" : ""}://${host.includes(":") ? "[" + host + "]" : host}:${port}`,
+    url: `http${o.tls ? "s" : ""}://${host.includes(":") ? "[" + host + "]" : host}:${port}${guard.token ? "/?__live_server_token=" + guard.token : ""}`,
     close: async () => {
       if (closed) return;
       closed = true;

@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fs from "fs";
+import { inside } from "./paths";
 import { certificate } from "../server/tls";
 import { Launch } from "./types";
 import { RuntimeOptions } from "../runtime/launch";
@@ -17,6 +19,18 @@ export function config(
     if (!/^[!#$%&'*+.^_`|~0-9a-z-]+$/i.test(k) || /[\r\n]/.test(v))
       throw new Error("Invalid response header: " + k);
   return {
+    injectedFiles: c.get<string[]>("injectedFiles", []).map((file) => {
+      const target = path.resolve(spec.workspace, file);
+      if (
+        !/\.(css|js)$/i.test(target) ||
+        !inside(fs.realpathSync(spec.workspace), fs.realpathSync(target))
+      )
+        throw new Error("Invalid injected CSS/JS file: " + file);
+      return target;
+    }),
+    protectLAN: c.get("protectLAN", true),
+    browserConsole: c.get("browserConsole", false),
+    apiProxy: c.get("apiProxy", []),
     media: path.join(context.extensionPath, "media"),
     php: c.get("phpPath", "php"),
     packageManager: c.get("packageManager", "npm"),

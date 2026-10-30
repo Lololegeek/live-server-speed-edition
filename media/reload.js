@@ -57,6 +57,50 @@
     socket.onerror = () => socket.close();
   }
   connect();
+  if (window.__liveServerSEConsole) {
+    const send = (level, message) => {
+      if (socket?.readyState !== 1) return;
+      try {
+        socket.send(
+          JSON.stringify({
+            type: "console",
+            level,
+            message: String(message).slice(0, 4000),
+          }),
+        );
+      } catch {}
+    };
+    for (const level of ["log", "info", "warn", "error"]) {
+      const original = console[level].bind(console);
+      console[level] = (...args) => {
+        original(...args);
+        send(
+          level,
+          args
+            .map((a) => {
+              try {
+                return typeof a === "string" ? a : JSON.stringify(a);
+              } catch {
+                return String(a);
+              }
+            })
+            .join(" "),
+        );
+      };
+    }
+    addEventListener(
+      "error",
+      (event) =>
+        send(
+          "error",
+          event.message + " at " + event.filename + ":" + event.lineno,
+        ),
+      true,
+    );
+    addEventListener("unhandledrejection", (event) =>
+      send("error", "Unhandled rejection: " + String(event.reason)),
+    );
+  }
   // Inspect links inside the VS Code iframe using HEAD only. Never request a download body.
   if (parent !== window)
     document.addEventListener(

@@ -44,3 +44,59 @@ test("activation registers every contributed command with a clean initial lifecy
     Module._load = original;
   }
 });
+
+test("session manager keeps independent launches and broadcasts edits and shutdown", async () => {
+  const Module = require("node:module"),
+    original = Module._load,
+    instances = [];
+  class Fake {
+    constructor() {
+      instances.push(this);
+      this.active = false;
+      this.starting = false;
+      this.output = {};
+    }
+    setVisible(value) {
+      this.visible = value;
+    }
+    render() {}
+    log() {}
+    async start(spec) {
+      this.last = spec;
+      this.active = true;
+    }
+    async stop() {
+      this.active = false;
+    }
+    changed(file, content) {
+      this.edit = { file, content };
+    }
+    dispose() {}
+  }
+  Module._load = function (id, ...args) {
+    return id === "../core/controller"
+      ? { Controller: Fake }
+      : id === "vscode"
+        ? {}
+        : original.call(this, id, ...args);
+  };
+  try {
+    delete require.cache[require.resolve("../dist/sessions/manager")];
+    const { SessionManager } = require("../dist/sessions/manager");
+    const manager = new SessionManager({});
+    await manager.start({ workspace: "/project", port: 5500, mode: "static" });
+    await manager.start({ workspace: "/project", port: 5501, mode: "php" });
+    assert.equal(instances.length, 2);
+    assert.ok(instances.every((s) => s.active));
+    assert.equal(instances[0].visible, false);
+    assert.equal(instances[1].visible, true);
+    manager.changed("/project/index.html", "new");
+    assert.ok(instances.every((s) => s.edit.content === "new"));
+    await manager.start({ workspace: "/project", port: 5500, mode: "static" });
+    assert.equal(instances.length, 2);
+    await manager.stopAll();
+    assert.ok(instances.every((s) => !s.active));
+  } finally {
+    Module._load = original;
+  }
+});

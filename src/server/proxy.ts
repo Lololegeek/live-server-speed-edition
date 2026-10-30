@@ -6,18 +6,24 @@ export function proxyRequest(
   req: http.IncomingMessage,
   res: http.ServerResponse,
   log: (m: string) => void,
+  injectHtml = true,
 ) {
   const headers = {
     ...req.headers,
+    cookie: (req.headers.cookie || "")
+      .split(";")
+      .filter((c) => !c.trim().startsWith("live_server_se_"))
+      .join(";"),
     host: target.host,
     "accept-encoding": "identity",
   };
   const upstream = (target.protocol === "https:" ? https : http).request(
-    new URL(req.url || "/", target),
+    new URL(target.origin + (req.url?.startsWith("/") ? req.url : "/")),
     { method: req.method, headers },
     (incoming) => {
       const responseHeaders = { ...incoming.headers };
       if (
+        injectHtml &&
         String(incoming.headers["content-type"]).includes("text/html") &&
         !String(incoming.headers["content-disposition"]).includes(
           "attachment",

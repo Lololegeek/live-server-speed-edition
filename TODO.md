@@ -16,15 +16,21 @@ The original main-branch roadmap is preserved below, with its current implementa
 ## Original main-branch ideas still open
 
 - [ ] Standalone CLI mode using the shared gateway/runtime modules.
-- [ ] Real Back navigation throughout the configuration wizard.
-- [ ] Optional custom CSS/JS injection with explicit file selection and CSP handling.
-- [ ] Multiple simultaneous server instances per VS Code window.
-- [ ] Configurable API proxy routes (the existing whole-server/HMR proxy is already implemented).
+- [x] Real Back navigation throughout the configuration wizard.
+- [x] Optional custom CSS/JS injection with explicit file selection and CSP handling.
+- [x] Multiple simultaneous server instances per VS Code window.
+- [x] Configurable API proxy routes (the existing whole-server/HMR proxy is already implemented).
 
 ## Additional follow-ups
 
-- [ ] Translate new setup, runtime and file metadata prompts into all supported languages.
+- [x] Translate setup wizard into all ten supported languages.
+- [ ] Translate remaining runtime diagnostics, management controls and file metadata prompts.
 - [ ] Additional real framework/monorepo integration fixtures beyond Vite React TSX.
-- [ ] Progress/cancellation UI during initial copy and build readiness.
+- [x] Progress/cancellation UI during initial copy and build readiness.
 - [ ] Restore browser state beyond scroll position; optional device synchronization.
 - [ ] Standalone GUI/EXE and optional browser companion extension.
+
+- [x] Workspace launch profiles and session management.
+- [x] Responsive viewport controls in WebView previews.
+- [x] Browser console/error relay and automatic HTTP failure logs.
+- [x] Private LAN access URLs with session cookies.

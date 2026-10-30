@@ -500,3 +500,129 @@ test("framework reload watcher can be disabled and per-request logs are opt-in",
   await (await fetch(verbose.url)).text();
   assert.ok(logs.some((m) => m.startsWith("GET ")));
 });
+
+test("LAN private URLs issue HttpOnly cookies and require authorization for files and WebSockets", async (t) => {
+  const root = await fixture(t);
+  await fs.writeFile(path.join(root, "index.html"), "<body>private</body>");
+  const s = await gateway({
+    ...options(root),
+    host: "0.0.0.0",
+    protectLAN: true,
+  });
+  t.after(() => s.close());
+  const url = new URL(s.url);
+  url.hostname = "127.0.0.1";
+  assert.equal((await fetch(url.origin)).status, 401);
+  const login = await fetch(url, { redirect: "manual" });
+  assert.equal(login.status, 303);
+  const cookie = login.headers.get("set-cookie");
+  assert.match(cookie, /HttpOnly/);
+  assert.equal(login.headers.get("location"), "/");
+  const authorized = await fetch(url.origin, {
+    headers: { cookie: cookie.split(";")[0] },
+  });
+  assert.match(await authorized.text(), /private/);
+  const denied = new WebSocket(
+    url.origin.replace("http:", "ws:") + "/__live_server_se/ws",
+  );
+  await new Promise((resolve) => denied.once("error", resolve));
+  const { entryUrl } = require("../dist/core/paths");
+  const entry = new URL(entryUrl(s.url, "folder/a b.html"));
+  assert.equal(entry.pathname, "/folder/a%20b.html");
+  assert.ok(entry.searchParams.get("__live_server_token"));
+});
+
+test("API prefix proxy forwards bodies and queries without injecting HTML or forwarding access cookies", async (t) => {
+  const root = await fixture(t);
+  const backend = http.createServer((req, res) => {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => {
+      res.setHeader("content-type", "text/html");
+      res.end(
+        JSON.stringify({ url: req.url, body, cookie: req.headers.cookie }),
+      );
+    });
+  });
+  await new Promise((resolve) => backend.listen(0, "127.0.0.1", resolve));
+  t.after(() => new Promise((resolve) => backend.close(resolve)));
+  const target = "http://127.0.0.1:" + backend.address().port;
+  const s = await gateway({
+    ...options(root),
+    apiProxy: [{ prefix: "/api", target, stripPrefix: true }],
+  });
+  t.after(() => s.close());
+  const response = await fetch(s.url + "/api/users?q=1", {
+    method: "POST",
+    body: "payload",
+    headers: { cookie: "live_server_se_secret=secret; app=yes" },
+  });
+  const data = await response.json();
+  assert.deepEqual(data, {
+    url: "/users?q=1",
+    body: "payload",
+    cookie: "app=yes",
+  });
+  const exact = await fetch(s.url + "/api?q=2");
+  assert.equal((await exact.json()).url, "/?q=2");
+  const { apiRoutes } = require("../dist/server/apiRoutes");
+  assert.throws(() =>
+    apiRoutes([{ prefix: "/api", target: "https://example.com" }]),
+  );
+  assert.throws(() =>
+    apiRoutes([{ prefix: "/api", target: target + "/path" }]),
+  );
+});
+
+test("browser console relay accepts bounded events and ignores malformed messages", async (t) => {
+  const root = await fixture(t),
+    logs = [];
+  const s = await gateway({
+    ...options(root),
+    browserConsole: true,
+    log: (m) => logs.push(m),
+  });
+  t.after(() => s.close());
+  const ws = new WebSocket(
+    s.url.replace("http:", "ws:") + "/__live_server_se/ws",
+  );
+  t.after(() => ws.terminate());
+  await new Promise((resolve) => ws.once("open", resolve));
+  ws.send("bad json");
+  ws.send(
+    JSON.stringify({
+      type: "console",
+      level: "error",
+      message: "runtime error",
+    }),
+  );
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  assert.ok(logs.some((m) => m === "[Browser error] runtime error"));
+});
+
+test("explicit CSS/JS injection serves only configured files and uses editor overlays", async (t) => {
+  const root = await fixture(t);
+  const file = path.join(root, "extra.css");
+  await fs.writeFile(file, "body{color:red}");
+  const s = await gateway({
+    ...options(root),
+    injectedFiles: [file],
+    readFile: (target) => (target === file ? "body{color:blue}" : undefined),
+  });
+  t.after(() => s.close());
+  const client = await (
+    await fetch(s.url + "/__live_server_se/client.js")
+  ).text();
+  assert.match(client, /injected\/0/);
+  new (require("node:vm").Script)(client);
+  assert.equal(
+    await (await fetch(s.url + "/__live_server_se/injected/0")).text(),
+    "body{color:blue}",
+  );
+  assert.equal(
+    (await fetch(s.url + "/__live_server_se/injected/1")).status,
+    404,
+  );
+  const { responsiveScript } = require("../dist/ui/responsive");
+  new (require("node:vm").Script)("const frame={};" + responsiveScript);
+});

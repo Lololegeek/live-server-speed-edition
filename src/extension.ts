@@ -1,13 +1,16 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { Controller } from "./core/controller";
+import { selectInjectedFiles } from "./commands/injectedFiles";
+import { SessionManager } from "./sessions/manager";
+import { Profiles } from "./profiles/store";
 import { quickStart } from "./commands/quickStart";
 import { setup } from "./commands/setup";
 import { detectProject } from "./projectDetector";
 import { Launch } from "./core/types";
-let controller: Controller | undefined;
+let controller: SessionManager | undefined;
 export function activate(context: vscode.ExtensionContext) {
-  const app = new Controller(context);
+  const app = new SessionManager(context);
+  const profiles = new Profiles(context.workspaceState);
   controller = app;
   context.subscriptions.push(app);
   const command = (id: string, fn: (uri?: vscode.Uri) => unknown) =>
@@ -23,6 +26,16 @@ export function activate(context: vscode.ExtensionContext) {
         },
       ),
     );
+  command("selectInjectedFiles", () => selectInjectedFiles());
+  command("clearInjectedFiles", () => selectInjectedFiles(true));
+  command("manageServers", () => app.manage());
+  command("stopAllServers", () => app.stopAll());
+  command("saveProfile", () => profiles.save(app.last));
+  command("deleteProfile", () => profiles.pick(true));
+  command("launchProfile", async () => {
+    const spec = await profiles.pick();
+    if (spec) await app.start(spec);
+  });
   command("toggleServer", async () => {
     if (app.active || app.starting) await app.stop();
     else {
@@ -129,5 +142,5 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 export async function deactivate() {
-  await controller?.stop();
+  await controller?.stopAll();
 }

@@ -100,6 +100,34 @@
       {
         "command": "fast-http-server.quickStart",
         "title": "Live Server: Quick Start"
+      },
+      {
+        "command": "fast-http-server.manageServers",
+        "title": "Live Server: Manage Server Sessions"
+      },
+      {
+        "command": "fast-http-server.stopAllServers",
+        "title": "Live Server: Stop All Servers"
+      },
+      {
+        "command": "fast-http-server.saveProfile",
+        "title": "Live Server: Save Launch Profile"
+      },
+      {
+        "command": "fast-http-server.deleteProfile",
+        "title": "Live Server: Delete Launch Profile"
+      },
+      {
+        "command": "fast-http-server.launchProfile",
+        "title": "Live Server: Launch Profile"
+      },
+      {
+        "command": "fast-http-server.selectInjectedFiles",
+        "title": "Live Server: Select Injected CSS/JS Files"
+      },
+      {
+        "command": "fast-http-server.clearInjectedFiles",
+        "title": "Live Server: Clear Injected CSS/JS Files"
       }
     ],
     "menus": {
@@ -304,6 +332,51 @@
           "type": "boolean",
           "default": true,
           "description": "Use framework HMR without a duplicate full-reload watcher. Disable for frameworks without HMR."
+        },
+        "liveServerSpeed.protectLAN": {
+          "type": "boolean",
+          "default": true,
+          "description": "Require a private session URL/QR code before granting LAN clients an HTTP-only session cookie. Restart servers to apply. Use HTTPS on untrusted networks."
+        },
+        "liveServerSpeed.browserConsole": {
+          "type": "boolean",
+          "default": false,
+          "description": "Forward browser console messages and JavaScript errors to the session Output channel (up to 20 messages/second per client). Restart to apply."
+        },
+        "liveServerSpeed.apiProxy": {
+          "type": "array",
+          "default": [],
+          "description": "Proxy HTTP API prefixes to local development backends. Longest prefix wins. Restart servers to apply.",
+          "items": {
+            "type": "object",
+            "required": [
+              "prefix",
+              "target"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "prefix": {
+                "type": "string",
+                "description": "Path prefix, for example /api"
+              },
+              "target": {
+                "type": "string",
+                "description": "Localhost HTTP/HTTPS origin, for example http://127.0.0.1:3000"
+              },
+              "stripPrefix": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        "liveServerSpeed.injectedFiles": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Explicit workspace-relative CSS/JS files to inject into previews. Use Select Injected CSS/JS Files; restart to apply. Page CSP is preserved and may block injection."
         }
       }
     }

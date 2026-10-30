@@ -1,5 +1,5 @@
 {
-  "liveServerSpeed.language.description": "Extension language for status text and existing translations (auto, en, fr, es, de, it, pt, ja, zh, ko, ru). Some setup prompts remain in English.",
+  "liveServerSpeed.language.description": "Extension language for status text and existing translations (auto, en, fr, es, de, it, pt, ja, zh, ko, ru). Some runtime diagnostics and management controls remain in English.",
   "liveServerSpeed.debounceTime.description": "Debounce time in milliseconds for file change detection and instant preview updates (50-1000ms)",
   "liveServerSpeed.relaunchShortcut.description": "Default keyboard shortcut for relaunching the server with last parameters (user can override in keybindings.json)",
   "liveServerSpeed.openKeybindings.description": "Open Keyboard Shortcuts for Live Server Speed Edition (set to true to open)",

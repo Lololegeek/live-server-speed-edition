@@ -5,37 +5,122 @@ import { Launch, Mode } from "../core/types";
 import { inside } from "../core/paths";
 import { localTarget } from "../core/network";
 import { detectProject } from "../projectDetector";
+import { input, pick, Back } from "./wizard";
+import { wizardText as w } from "../ui/wizardText";
 export async function setup(
   clicked?: vscode.Uri,
   last?: Launch,
 ): Promise<Launch | undefined> {
-  const workspace = clicked
-    ? vscode.workspace.getWorkspaceFolder(clicked)
-    : vscode.workspace.getWorkspaceFolder(
-        vscode.window.activeTextEditor?.document.uri || vscode.Uri.file(""),
-      );
   const folders = vscode.workspace.workspaceFolders || [];
   const chosen =
-    workspace ||
+    (clicked && vscode.workspace.getWorkspaceFolder(clicked)) ||
+    (vscode.window.activeTextEditor &&
+      vscode.workspace.getWorkspaceFolder(
+        vscode.window.activeTextEditor.document.uri,
+      )) ||
     (folders.length === 1
       ? folders[0]
       : await vscode.window.showWorkspaceFolderPick());
   if (!chosen) return;
-  const folder = chosen.uri.fsPath,
-    c = vscode.workspace.getConfiguration("liveServerSpeed", chosen.uri);
+  const c = vscode.workspace.getConfiguration("liveServerSpeed", chosen.uri);
+  let directory = ".",
+    modeIndex = 0,
+    port = String(last?.port || c.get("port", 5500)),
+    hostIndex = 0,
+    protocol = 0,
+    preview = c.get<string>("defaultPreview", "browser") === "webview" ? 1 : 0,
+    script = "dev",
+    upstream = last?.upstream || c.get("upstreamUrl", "http://127.0.0.1:5173");
+  let folder = chosen.uri.fsPath;
+  const validateFolder = (value: string) => {
+    const target = path.resolve(chosen.uri.fsPath, value);
+    try {
+      return inside(
+        fs.realpathSync(chosen.uri.fsPath),
+        fs.realpathSync(target),
+      ) && fs.statSync(target).isDirectory()
+        ? undefined
+        : w(16);
+    } catch {
+      return w(16);
+    }
+  };
+  let step = 0;
+  while (step < 8) {
+    let answer: string | number | typeof Back | undefined;
+    if (step === 0) {
+      answer = await input(w(0), directory, validateFolder);
+      if (typeof answer === "string") {
+        directory = answer;
+        folder = path.resolve(chosen.uri.fsPath, directory);
+        script = detectProject(folder).devScript || "dev";
+      }
+    }
+    if (step === 1) {
+      answer = await pick(w(17), [w(1), w(2), w(3), w(4)], modeIndex);
+      if (typeof answer === "number") modeIndex = answer;
+    }
+    if (step === 2) {
+      answer = await input(w(5), port, (v) =>
+        /^\d+$/.test(v) && +v > 0 && +v <= 65535 ? undefined : w(6),
+      );
+      if (typeof answer === "string") port = answer;
+    }
+    if (step === 3) {
+      answer = await pick(w(9), [w(7), w(8)], hostIndex);
+      if (typeof answer === "number") hostIndex = answer;
+    }
+    if (step === 4) {
+      answer = await pick(w(10), ["HTTP", "HTTPS"], protocol);
+      if (typeof answer === "number") protocol = answer;
+    }
+    if (step === 5) {
+      answer = await pick(w(18), [w(11), w(12)], preview);
+      if (typeof answer === "number") preview = answer;
+    }
+    if (step === 6) {
+      if (modeIndex !== 2) {
+        step++;
+        continue;
+      }
+      answer = await input(w(13), script, (v) => {
+        try {
+          return /^[a-zA-Z0-9:_-]+$/.test(v) &&
+            typeof JSON.parse(
+              fs.readFileSync(path.join(folder, "package.json"), "utf8"),
+            ).scripts?.[v] === "string"
+            ? undefined
+            : w(14);
+        } catch {
+          return w(14);
+        }
+      });
+      if (typeof answer === "string") script = answer;
+    }
+    if (step === 7) {
+      if (modeIndex < 2) break;
+      answer = await input(w(15), upstream, (v) => {
+        try {
+          localTarget(v);
+          return undefined;
+        } catch (e) {
+          return String(e);
+        }
+      });
+      if (typeof answer === "string") upstream = answer;
+    }
+    if (answer === Back) {
+      if (step === 0) return;
+      step--;
+      if (step === 6 && modeIndex !== 2) step = 5;
+      continue;
+    }
+    if (answer === undefined) return;
+    step++;
+  }
+  const mode = ["static", "php", "framework", "external"][modeIndex] as Mode;
   const project = detectProject(folder);
-  const modePick = await vscode.window.showQuickPick(
-    [
-      { label: "Static HTML / CSS / JavaScript", id: "static" },
-      { label: "PHP + live reload", id: "php" },
-      { label: "Framework dev server (JS / TS)", id: "framework" },
-      { label: "Attach existing localhost server", id: "external" },
-    ],
-    { placeHolder: project.description },
-  );
-  if (!modePick) return;
-  const mode = modePick.id as Mode;
-  let root = path.resolve(
+  const root = path.resolve(
     folder,
     c.get<string>("serverRoot", "") ||
       (mode === "static" && c.get("frameworkMode", "auto") === "auto"
@@ -43,89 +128,25 @@ export async function setup(
         : ""),
   );
   if (!fs.existsSync(root) || !fs.statSync(root).isDirectory())
-    throw new Error("Server root is not a directory: " + root);
-  let entry = c.get<string>("entryFile", "") || "";
-  if (clicked) {
-    if (!inside(root, clicked.fsPath))
-      throw new Error(
-        "Selected file is outside the served root. Change serverRoot or select the build entry.",
-      );
-    entry = path.relative(root, clicked.fsPath).split(path.sep).join("/");
-  }
-  if (!entry)
-    entry =
-      mode === "php" && fs.existsSync(path.join(root, "index.php"))
+    throw new Error(w(16));
+  if (clicked && !inside(root, clicked.fsPath)) throw new Error(w(16));
+  const entry = clicked
+    ? path.relative(root, clicked.fsPath).split(path.sep).join("/")
+    : c.get<string>("entryFile", "") ||
+      (mode === "php" && fs.existsSync(path.join(root, "index.php"))
         ? "index.php"
         : fs.existsSync(path.join(root, "index.html"))
           ? "index.html"
-          : "";
-  const portInput = await vscode.window.showInputBox({
-    prompt: "Server port",
-    value: String(last?.port || c.get("port", 5500)),
-    validateInput: (v) =>
-      /^\d+$/.test(v) && Number(v) >= 1 && Number(v) <= 65535
-        ? undefined
-        : "Use a port from 1 to 65535",
-  });
-  if (!portInput) return;
-  const hostPick = await vscode.window.showQuickPick(
-    [
-      { label: "Localhost only", host: "127.0.0.1" },
-      { label: "Local network (phone / QR)", host: "0.0.0.0" },
-    ],
-    { placeHolder: "Who can access this preview?" },
-  );
-  if (!hostPick) return;
-  const protocol = await vscode.window.showQuickPick(["HTTP", "HTTPS"], {
-    placeHolder:
-      "HTTPS uses your certificate, or a locally generated self-signed certificate",
-  });
-  if (!protocol) return;
-  const preview = await vscode.window.showQuickPick([
-    { label: "Browser", id: "browser" },
-    { label: "VS Code WebView", id: "webview" },
-  ]);
-  if (!preview) return;
-  let script: string | undefined, upstream: string | undefined;
-  if (mode === "framework" || mode === "external") {
-    if (mode === "framework") {
-      script = await vscode.window.showInputBox({
-        prompt: "Existing package.json script to run",
-        value: project.devScript || "dev",
-        validateInput: (v) =>
-          /^[a-zA-Z0-9:_-]+$/.test(v) ? undefined : "Use a package script name",
-      });
-      if (!script) return;
-      const pkg = JSON.parse(
-        fs.readFileSync(path.join(folder, "package.json"), "utf8"),
-      );
-      if (typeof pkg.scripts?.[script] !== "string")
-        throw new Error("Script not found in package.json: " + script);
-    }
-    upstream = await vscode.window.showInputBox({
-      prompt:
-        "Local development server URL (configure its port in your project script)",
-      value: last?.upstream || c.get("upstreamUrl", "http://127.0.0.1:5173"),
-      validateInput: (v) => {
-        try {
-          localTarget(v);
-          return undefined;
-        } catch (e) {
-          return String(e);
-        }
-      },
-    });
-    if (!upstream) return;
-  }
+          : "");
   return {
     workspace: folder,
     root,
     entry,
     mode,
-    port: Number(portInput),
-    host: hostPick.host,
-    https: protocol === "HTTPS",
-    preview: preview.id as Launch["preview"],
+    port: +port,
+    host: hostIndex ? "0.0.0.0" : "127.0.0.1",
+    https: protocol === 1,
+    preview: preview ? "webview" : "browser",
     script,
     upstream,
     instant: mode !== "external" && c.get("liveEditing", true),
